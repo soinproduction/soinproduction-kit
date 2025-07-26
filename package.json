@@ -1,0 +1,19 @@
+{
+  "name": "@soinproduction/kit",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Андрей Соин",
+  "devDependencies": {
+    "rollup": "^4.45.3"
+  }
+}
