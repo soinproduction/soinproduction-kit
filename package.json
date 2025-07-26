@@ -1,9 +1,11 @@
 {
   "name": "@soinproduction/kit",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "main": "dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "src",
+    "*.md"
   ],
   "scripts": {
     "build": "rollup -c"
@@ -14,6 +16,7 @@
   },
   "author": "Андрей Соин",
   "devDependencies": {
-    "rollup": "^4.45.3"
+    "rollup": "^4.45.3",
+    "rollup-plugin-copy": "^3.5.0"
   }
 }

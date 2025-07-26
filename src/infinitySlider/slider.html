@@ -1,0 +1,29 @@
+<div class="marquee">
+	<div class="marquee__item"><img src="" alt=""></div>
+	<div class="marquee__item"><img src="" alt=""></div>
+	<div class="marquee__item"><img src="" alt=""></div>
+	<div class="marquee__item"><img src="" alt=""></div>
+	<div class="marquee__item"><img src="" alt=""></div>
+</div>
+
+<script>
+
+    import {InfiniteSlider} from "@soinproduction/kit";
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const sliders = document.querySelectorAll('.marquee');
+
+        sliders.forEach((el, index) => {
+            const slider = new InfiniteSlider(el, {
+                direction: index % 2 === 0 ? 'left' : 'right',
+                speed: 0.4,
+                pauseOnHover: false,
+                showInfo: false,
+                onStart: () => console.log('▶️ Started'),
+                onStop: () => console.log('⏸️ Stopped'),
+                onSlideLoop: (dir) => console.log(`🔁 Slide loop (${dir})`)
+            });
+        });
+    });
+
+</script>
