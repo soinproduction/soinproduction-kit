@@ -1,39 +1,5 @@
-export const enableScroll = () => {
-  const fixBlocks = document?.querySelectorAll('.fixed-block')
-  const body = document.body
-  const pagePosition = parseInt(document.body.dataset.position, 10)
-  fixBlocks.forEach((el) => {
-    el.style.paddingRight = '0px'
-  })
-  body.style.paddingRight = '0px'
-
-  body.style.top = 'auto'
-  body.classList.remove('dis-scroll')
-
-  if (pagePosition) {
-    window.scroll({
-      top: pagePosition,
-      left: 0,
-    })
-  }
-
-  body.removeAttribute('data-position')
-}
-
-export const disableScroll = () => {
-  const fixBlocks = document?.querySelectorAll('.fixed-block')
-  const pagePosition = window.scrollY
-  const paddingOffset = `${window.innerWidth - document.body.offsetWidth}px`
-
-  document.documentElement.style.scrollBehavior = 'none'
-  fixBlocks.forEach((el) => {
-    el.style.paddingRight = paddingOffset
-  })
-  document.body.style.paddingRight = paddingOffset
-  document.body.classList.add('dis-scroll')
-  document.body.dataset.position = pagePosition
-  document.body.style.top = `-${pagePosition}px`
-}
+import {disableScroll} from "../functions/disable-scroll.js";
+import {enableScroll} from "../functions/enable-scroll.js";
 
 export class AdditionalToggle {
   constructor({ items = [], overlay = null, activeClass = 'active' }) {
@@ -130,8 +96,6 @@ export class AdditionalToggle {
             trigger.forEach((t) => this.addClass(t))
             if (this.overlay) this.addClass(this.overlay)
           }
-
-          console.log(disableScroll)
           disableScroll()
         })
       })
