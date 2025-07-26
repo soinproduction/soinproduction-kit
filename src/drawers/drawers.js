@@ -1,4 +1,4 @@
-const enableScroll = () => {
+export const enableScroll = () => {
   const fixBlocks = document?.querySelectorAll('.fixed-block')
   const body = document.body
   const pagePosition = parseInt(document.body.dataset.position, 10)
@@ -20,7 +20,7 @@ const enableScroll = () => {
   body.removeAttribute('data-position')
 }
 
-const disableScroll = () => {
+export const disableScroll = () => {
   const fixBlocks = document?.querySelectorAll('.fixed-block')
   const pagePosition = window.scrollY
   const paddingOffset = `${window.innerWidth - document.body.offsetWidth}px`
