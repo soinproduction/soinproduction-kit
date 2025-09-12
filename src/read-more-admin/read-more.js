@@ -1,21 +1,51 @@
-export default class ReadMore {
+export class ReadMore {
     /**
      * @param {Object} options
-     * @param {string|NodeList|HTMLElement[]} [options.buttons='[data-read-more]'] - селектор или список кнопок
-     * @param {string} [options.contentClass='read-more-content'] - класс контейнера с контентом (если нет data-target)
-     * @param {number} [options.animationDuration=300] - длительность анимации в мс (для синхронизации с CSS)
-     * @param {boolean} [options.setAria=true] - выставлять aria-атрибуты
-     * @param {boolean} [options.autoHeightOptimization=true] - ставить max-height:'none' после раскрытия
+     * @param {string|NodeList|HTMLElement[]} [options.buttons='[data-read-more]']
+     * @param {string} [options.contentClass='read-more-content']
+     * @param {number} [options.animationDuration=300]
+     * @param {boolean} [options.setAria=true]
+     * @param {boolean} [options.autoHeightOptimization=true]
+     * @param {boolean} [options.autoInit=true]
      */
-    constructor({buttons = '[data-read-more]', contentClass = 'read-more-content', animationDuration = 300, setAria = true, autoHeightOptimization = true,} = {}) {
-        this.options = {buttons, contentClass, animationDuration, setAria, autoHeightOptimization};
+    constructor({
+                    buttons = '[data-read-more]',
+                    contentClass = 'read-more-content',
+                    animationDuration = 300,
+                    setAria = true,
+                    autoHeightOptimization = true,
+                    autoInit = true,
+                } = {}) {
+        this.options = {
+            buttons,
+            contentClass,
+            animationDuration,
+            setAria,
+            autoHeightOptimization,
+            autoInit,
+        };
+
+        /** @type {HTMLElement[]} */
         this._buttons = [];
+        /** @type {Map<HTMLElement, {handler:(e:Event)=>void, content:HTMLElement}>} */
         this._handlers = new Map();
+        /** @type {boolean} */
+        this._initialized = false;
+
+        if (this.options.autoInit) {
+            this.init();
+        }
     }
 
     init() {
+        if (this._initialized) return;
+        this._initialized = true;
+
         const {buttons} = this.options;
-        this._buttons = typeof buttons === 'string' ? Array.from(document.querySelectorAll(buttons)) : Array.from(buttons || []);
+        this._buttons =
+            typeof buttons === 'string'
+                ? Array.from(document.querySelectorAll(buttons))
+                : Array.from(buttons || []);
 
         this._buttons.forEach((button, idx) => {
             if (!(button instanceof HTMLElement)) return;
@@ -26,7 +56,11 @@ export default class ReadMore {
                 content = document.querySelector(targetSelector);
             } else {
                 const prev = button.previousElementSibling;
-                if (prev && prev.classList && prev.classList.contains(this.options.contentClass)) {
+                if (
+                    prev &&
+                    prev.classList &&
+                    prev.classList.contains(this.options.contentClass)
+                ) {
                     content = prev;
                 }
             }
@@ -44,7 +78,9 @@ export default class ReadMore {
 
             if (!button._rmOriginalNonTextNodes) {
                 button._rmOriginalNonTextNodes = Array.from(button.childNodes).filter(
-                    node => node.nodeType !== Node.TEXT_NODE && !(node.classList && node.classList.contains('read-more-text'))
+                    (node) =>
+                        node.nodeType !== Node.TEXT_NODE &&
+                        !(node.classList && node.classList.contains('read-more-text')),
                 );
             }
 
@@ -67,7 +103,6 @@ export default class ReadMore {
     }
 
     /**
-     * Переключение состояния
      * @param {HTMLElement} button
      * @param {HTMLElement} content
      */
@@ -131,7 +166,7 @@ export default class ReadMore {
     _setButtonLabel(button, text) {
         const nonText = button._rmOriginalNonTextNodes || [];
         button.innerHTML = '';
-        nonText.forEach(n => button.appendChild(n.cloneNode(true)));
+        nonText.forEach((n) => button.appendChild(n.cloneNode(true)));
         const labelSpan = document.createElement('span');
         labelSpan.className = 'read-more-text';
         labelSpan.textContent = ' ' + text;
@@ -148,16 +183,18 @@ export default class ReadMore {
                 if (button._rmOriginalNonTextNodes) {
                     const nonText = button._rmOriginalNonTextNodes;
                     button.innerHTML = '';
-                    nonText.forEach(n => button.appendChild(n.cloneNode(true)));
+                    nonText.forEach((n) => button.appendChild(n.cloneNode(true)));
                 }
 
                 if (this.options.setAria) {
                     button.removeAttribute('aria-expanded');
                     button.removeAttribute('aria-controls');
-                    if (button.getAttribute('role') === 'button') button.removeAttribute('role');
+                    if (button.getAttribute('role') === 'button')
+                        button.removeAttribute('role');
                 }
             }
         });
         this._buttons = [];
+        this._initialized = false;
     }
 }

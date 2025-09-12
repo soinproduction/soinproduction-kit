@@ -6,6 +6,11 @@ export * from './src/infinitySlider/infiniteSlider.js';
 export * from './src/custom-select/select.js';
 // select =====
 
+// read more =====
+export * from './src/read-more-admin/read-more.js';
+// read more =====
+
+
 export * from './src/modals/modals.js';
 
 export * from './src/functions/disable-scroll.js';

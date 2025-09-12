@@ -1,0 +1,25 @@
+<div>
+	<div class="read-more-content" style="max-height:0;overflow:hidden;transition:max-height 0.3s ease;">
+		<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aperiam deleniti dolor dolorem earum esse, excepturi impedit laudantium libero magni necessitatibus nesciunt perferendis placeat quae quibusdam quidem reiciendis saepe totam vel.</p>
+	</div>
+    <button type="button" data-read-more data-more-text="See All" data-less-text="Hide">
+        <span class="read-more-text">See All</span>
+    </button>
+</div>
+
+
+
+<script>
+    import ReadMore from "@soinproduction/kit";
+
+    document.addEventListener('DOMContentLoaded', () => {
+        new ReadMore({
+            buttons: '[data-read-more]',
+            contentClass: 'read-more-content',
+            animationDuration: 300,
+            setAria: true,
+            autoHeightOptimization: true,
+        });
+
+    });
+</script>
