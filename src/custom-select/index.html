@@ -1,0 +1,43 @@
+<div class="custom-select">
+    <div class="select-field">
+        <div class="selected-options">
+            <span class="placeholder"></span>
+        </div>
+        <div class="arrow-down">
+            <span class="icon-arrow-down"></span>
+        </div>
+    </div>
+
+    <ul class="options-container">
+        <li class="option" data-value="js">
+            <span class="option-text">JavaScript</span>
+        </li>
+        <li class="option" data-value="php">
+            <span class="option-text">PHP</span>
+        </li>
+        <li class="option disabled" data-value="rust">
+            <span class="option-text">Rust (disabled)</span>
+        </li>
+    </ul>
+</div>
+
+<script>
+    import CustomSelect, { selectInstace } from "@soinproduction/kit";
+
+    const tagsSelect = new CustomSelect( ' SelectEl ', {
+        mode: 'multiple', // single / multiple
+        name: '', // select input name
+        placeholder: ' ', // select placeholder
+        showRemoveButton: true,
+        hideOnClear: false,
+        onSelect: (value) => {
+            console.log('[tagsSelect] selected:', value, '->', tagsSelect.getValues());
+        },
+        onRemove: (value) => {
+            console.log('[tagsSelect] removed:', value, '->', tagsSelect.getValues());
+        },
+        showInfo: false // выводит info методов в консоль
+    });
+
+    const currentSelect = [...selectInstace.values()].find((instance) => instance.config.name === ' input name '); // для получения конкретного селекта
+</script>

@@ -1,0 +1,58 @@
+<ul class="accordion" data-default="1" data-single="true" data-breakpoint="576" data-acc-init>
+    <li class="accordion__item">
+        <button class="accordion__btn" data-id="1"></button>
+        <div class="accordion__content" data-content="1"></div>
+    </li>
+</ul>
+
+<div class="default-class" data-tabs-init>
+    <ul class="tabs-nav">
+        <li class="tabs-nav__item">
+            <button class="tabs-nav__btn" type="button" data-tab="1"></button>
+        </li>
+    </ul>
+    <ul class="tabs-content">
+        <li class="tabs-content__item" data-tab-content="1"></li>
+    </ul>
+</div>
+
+<script>
+    import {Switcher} from "@soinproduction/kit";
+
+    document.addEventListener('DOMContentLoaded', () => {
+        new Switcher('[data-acc-init]', {
+            mode: 'accordion',           // 'tabs' или 'accordion'
+            default: 'tab1',             // ID по умолчанию (будет открыт при загрузке) если не задан data-default
+            activeClass: 'active',       // Класс активности, который применяется к кнопке, обёртке и контенту
+            attrNav: 'data-id',          // Атрибут на кнопках (навигация)
+            attrContent: 'data-content', // Атрибут на блоках контента
+            single: true,                // Только для mode: 'accordion' — разрешает открытие только одного блока если не задан data-single
+            breakpoint: 1024,            // Для single — ширина, до которой правило работает (если нужно) если не задан data-breakpoint
+            responsive: {
+                breakpoint: 768,         // При <=768px переключает mode
+                mode: 'tabs'        // Будет использоваться 'accordion' вместо 'tabs'
+            },
+
+            autoInitNested: true, // Авто-инициализация вложенных switcher'ов внутри открытого контента
+            showInfo: true,       // Показывает в консоли таблицу с методами, событиями и настройками
+
+            // ⚡ События:
+            beforeOpen: (id, ctx) => {
+                console.log('🚦 beforeOpen →', id, ctx);
+            },
+
+            onOpen: (id, ctx) => {
+                console.log('✅ onOpen →', id, ctx);
+            },
+
+            onClose: (id, ctx) => {
+                console.log('❌ onClose →', id, ctx);
+            },
+
+            afterClose: (id, ctx) => {
+                console.log('🧹 afterClose →', id, ctx);
+            }
+
+        });
+    });
+</script>

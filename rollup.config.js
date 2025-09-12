@@ -12,7 +12,7 @@ export default {
             targets: [
                 { src: 'src/**/*.{css,scss,md,js,html}', dest: 'dist/src' }
             ],
-            flatten: false // сохраняет структуру папок
+            flatten: false
         })
     ]
 }

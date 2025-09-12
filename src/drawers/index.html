@@ -1,0 +1,34 @@
+<script>
+    import {AdditionalToggle} from "@soinproduction/kit";
+
+    window.additionalToggleInstance = new AdditionalToggle({
+        overlay: '[data-overlay]',
+        activeClass: 'active',
+
+        // Глобальные хуки До/После открытия
+        beforeOpen: (inst) => { /* общий препроцесс */ },
+        afterOpen:  (inst) => { /* общий постпроцесс */ },
+        beforeClose:(inst) => { /* общий препроцесс закрытия */ },
+        afterClose: (inst) => { /* общий постпроцесс закрытия */ },
+
+        items: [
+            {
+                trigger: '', // тригер (можно указывать несколько: ".trigger, .trigger2")
+                target: '', // цель тригера
+                close: '', // сlose (можно указывать несколько: ".сlose, .сlose2")
+                targetActiveClass: ' active', // доп класс активности для target
+                overlayExtraClass: 'overlay-mode', // доп класс активности для overlay
+                scroll: true,
+
+                // хуки для конкретного item До/После открытия
+                beforeOpen:  (inst) => {},
+                afterOpen:   (inst) => {},
+                beforeClose: (inst) => {},
+                afterClose:  (inst) => {}
+            },
+        ]
+    });
+
+
+
+</script>
