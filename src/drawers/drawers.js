@@ -11,6 +11,8 @@ export class AdditionalToggle {
      *   targetActiveClass?:string,
      *   overlayExtraClass?:string,
      *   scroll?:boolean,
+     *   overlay?:boolean,
+     *   clickOnOverlay?:boolean,
      *   beforeOpen?:Function,
      *   afterOpen?:Function,
      *   beforeClose?:Function,
@@ -18,7 +20,7 @@ export class AdditionalToggle {
      * }>} cfg.items
      * @param {string|HTMLElement|null} [cfg.overlay=null]
      * @param {string} [cfg.activeClass='active']
-     * @param {Function} [cfg.beforeOpen]    // глобальные хуки
+     * @param {Function} [cfg.beforeOpen]
      * @param {Function} [cfg.afterOpen]
      * @param {Function} [cfg.beforeClose]
      * @param {Function} [cfg.afterClose]
@@ -101,6 +103,31 @@ export class AdditionalToggle {
     }
 
     /**
+     * Пересчитать состояние overlay с учётом открытых инстансов.
+     * Включает/выключает overlay и единожды добавляет overlayExtraClass текущего открытого инстанса (если есть).
+     */
+    _syncOverlayState() {
+        if (!this.overlay) return;
+
+        // очистить все возможные overlayExtraClass
+        for (const it of this.instances) {
+            if (it.overlayExtraClass) this.overlay.classList.remove(it.overlayExtraClass);
+        }
+
+        // найти открытый инстанс, который использует overlay
+        const current = this.instances.find((it) => it.isOpen && it.overlay === true);
+
+        if (current) {
+            this.overlay.classList.add(this.activeClass);
+            if (current.overlayExtraClass) {
+                this.overlay.classList.add(current.overlayExtraClass);
+            }
+        } else {
+            this.overlay.classList.remove(this.activeClass);
+        }
+    }
+
+    /**
      * Закрыть конкретный инстанс.
      * @returns {boolean} true — закрыл, false — отменено хуком/нечего закрывать
      */
@@ -118,17 +145,12 @@ export class AdditionalToggle {
         inst.target.classList.remove(inst.targetClass);
         inst.triggers.forEach((t) => t.classList.remove(this.activeClass));
 
-        if (this.overlay && inst.overlayExtraClass) {
-            this.overlay.classList.remove(inst.overlayExtraClass);
-        }
-
         if (inst.scroll === true) {
             enableScroll();
         }
 
-        if (!this._anyOpen() && this.overlay) {
-            this.overlay.classList.remove(this.activeClass);
-        }
+        // пересчитать overlay (учитываем per-item overlay)
+        this._syncOverlayState();
 
         // afterClose: item → глобальный
         this._safeCall(inst.hooks.afterClose, inst);
@@ -143,16 +165,9 @@ export class AdditionalToggle {
     _openInstance(inst) {
         if (!inst || !inst.target) return;
 
-        // закрыть все прочие; если что-то нельзя закрыть — не открываем новый
-        const allClosed = this.closeAll();
+        // закрыть все прочие без учёта clickOnOverlay (force=true)
+        const allClosed = this.closeAll(true);
         if (!allClosed && this._anyOpen()) return;
-
-        // убрать все overlayExtraClass (чистое состояние)
-        if (this.overlay) {
-            for (const it of this.instances) {
-                if (it.overlayExtraClass) this.overlay.classList.remove(it.overlayExtraClass);
-            }
-        }
 
         // beforeOpen: глобальный → item
         const g = this._safeCall(this.gHooks.beforeOpen, inst);
@@ -165,14 +180,12 @@ export class AdditionalToggle {
         inst.target.classList.add(inst.targetClass);
         inst.triggers.forEach((t) => t.classList.add(this.activeClass));
 
-        if (this.overlay) {
-            this.overlay.classList.add(this.activeClass);
-            if (inst.overlayExtraClass) this.overlay.classList.add(inst.overlayExtraClass);
-        }
-
         if (inst.scroll === true) {
             disableScroll();
         }
+
+        // пересчитать overlay (включаем только если inst.overlay === true)
+        this._syncOverlayState();
 
         // afterOpen: item → глобальный
         this._safeCall(inst.hooks.afterOpen, inst);
@@ -193,6 +206,11 @@ export class AdditionalToggle {
 
             const targetClass = (item.targetActiveClass || this.activeClass).toString().trim() || this.activeClass;
             const overlayExtraClass = (item.overlayExtraClass || "").toString().trim();
+
+            // NEW: overlay / clickOnOverlay (оба по умолчанию true)
+            const overlay = item.overlay === false ? false : true;
+            const clickOnOverlay = item.clickOnOverlay === false ? false : true;
+
             const scroll = item.scroll === true;
 
             const hooks = {
@@ -208,6 +226,8 @@ export class AdditionalToggle {
                 closes,
                 targetClass,
                 overlayExtraClass,
+                overlay,          // NEW
+                clickOnOverlay,   // NEW
                 scroll,
                 hooks,
                 isOpen: false
@@ -240,7 +260,7 @@ export class AdditionalToggle {
             });
         });
 
-        // клик-вне
+        // клик-вне (учитываем per-item clickOnOverlay)
         this._boundDocClick = (e) => {
             let changed = false;
 
@@ -250,46 +270,55 @@ export class AdditionalToggle {
                 const insideTarget = inst.target?.contains(e.target);
                 const insideTrigger = inst.triggers.some((t) => t.contains(e.target));
 
-                if (!insideTarget && !insideTrigger) {
+                // закрываем кликом-вне только если разрешено для этого инстанса
+                if (!insideTarget && !insideTrigger && inst.clickOnOverlay === true) {
                     const ok = this._closeInstance(inst);
                     if (ok) changed = true;
                 }
             });
 
-            if (changed && this.overlay && !this._anyOpen()) {
-                this.overlay.classList.remove(this.activeClass);
-            }
+            if (changed) this._syncOverlayState();
         };
         document.addEventListener("click", this._boundDocClick);
 
-        // клик по overlay
+        // клик по overlay: закрыть только те инстансы, где clickOnOverlay === true
         if (this.overlay) {
             this._boundOverlayClick = (e) => {
                 if (e.target === this.overlay) {
-                    this.closeAll();
+                    let changed = false;
+                    this.instances.forEach((inst) => {
+                        if (inst.isOpen && inst.clickOnOverlay === true) {
+                            const ok = this._closeInstance(inst);
+                            if (ok) changed = true;
+                        }
+                    });
+                    if (changed) this._syncOverlayState();
                 }
             };
             this.overlay.addEventListener("click", this._boundOverlayClick);
         }
+
+        // на всякий случай привести overlay к корректному начальному состоянию
+        this._syncOverlayState();
     }
 
     /**
      * Закрыть всё.
+     * @param {boolean} [force=false] — если true, игнорирует флаг clickOnOverlay и закрывает программно
      * @returns {boolean} true — все закрылись; false — хотя бы один отказал (beforeClose=false)
      */
-    closeAll() {
+    closeAll(force = false) {
         let allClosed = true;
+
         this.instances.forEach((inst) => {
+            if (!force && inst.clickOnOverlay === false) return; // уважаем запрет на клик-вне
             const ok = this._closeInstance(inst);
             if (!ok) allClosed = false;
         });
 
-        if (allClosed && this.overlay) {
-            this.overlay.classList.remove(this.activeClass);
-            for (const it of this.instances) {
-                if (it.overlayExtraClass) this.overlay.classList.remove(it.overlayExtraClass);
-            }
-        }
+        // синхронизация overlay
+        this._syncOverlayState();
+
         return allClosed;
     }
 
@@ -305,4 +334,38 @@ export class AdditionalToggle {
             this._boundOverlayClick = null;
         }
     }
+
+    open(ref) {
+        const inst = this._findInstance(ref);
+        if (inst) this._openInstance(inst);
+    }
+
+    close(ref) {
+        const inst = this._findInstance(ref);
+        if (inst) this._closeInstance(inst);
+    }
+
+    toggle(ref) {
+        const inst = this._findInstance(ref);
+        if (!inst) return;
+        if (inst.isOpen) {
+            this._closeInstance(inst);
+        } else {
+            this._openInstance(inst);
+        }
+    }
+
+    _findInstance(ref) {
+        if (typeof ref === "number") {
+            return this.instances[ref] || null;
+        }
+        if (typeof ref === "string") {
+            return this.instances.find(inst => inst.target?.matches(ref)) || null;
+        }
+        if (ref instanceof HTMLElement) {
+            return this.instances.find(inst => inst.target === ref) || null;
+        }
+        return null;
+    }
+
 }

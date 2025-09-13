@@ -19,6 +19,8 @@
                 targetActiveClass: ' active', // доп класс активности для target
                 overlayExtraClass: 'overlay-mode', // доп класс активности для overlay
                 scroll: true,
+                overlay: true, // overlay включен - true по умолчанию
+                clickOnOverlay: true, // закрытие по клику на overlay - true по умолчанию
 
                 // хуки для конкретного item До/После открытия
                 beforeOpen:  (inst) => {},
@@ -28,6 +30,28 @@
             },
         ]
     });
+
+    // открыть первый item (по индексу в массиве items)
+    window.additionalToggleInstance.open(0);
+
+    // закрыть первый item
+    window.additionalToggleInstance.close(0);
+
+    // открыть по селектору target
+    window.additionalToggleInstance.open('.menu');
+
+    // закрыть по селектору target
+    window.additionalToggleInstance.close('.menu');
+
+    // открыть по самому DOM-элементу
+    const searchPanel = document.querySelector('.search-panel');
+    window.additionalToggleInstance.open(searchPanel);
+
+    window.additionalToggleInstance.toggle('.menu');
+
+    // закрыть всё
+    window.additionalToggleInstance.closeAll();
+
 
 
 
