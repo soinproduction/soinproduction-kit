@@ -10,12 +10,17 @@ export * from './src/custom-select/select.js';
 export * from './src/read-more-admin/read-more.js';
 // read more =====
 
+// modals =====
+export * from './src/modals/modals.js';
+// modals =====
+
 
 export * from './src/modals/modals.js';
 
 export * from './src/functions/disable-scroll.js';
 export * from './src/functions/enable-scroll.js';
 export * from './src/functions/element-size.js';
+
 
 
 

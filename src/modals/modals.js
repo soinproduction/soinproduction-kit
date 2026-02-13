@@ -1,160 +1,282 @@
+import {addCustomClass, fadeIn, fadeOut, removeCustomClass} from "../functions/customFunctions.js";
 import {disableScroll} from "../functions/disable-scroll.js";
 import {enableScroll} from "../functions/enable-scroll.js";
-import {addCustomClass, fadeIn, removeCustomClass} from "../functions/customFunctions.js";
 
-class ModalManager {
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+export class ModalManager {
     constructor({
-            activeMode = '',
-            fadeInTimeout = 300,
-            fadeOutTimeout = 300,
-            closeOnEsc = true,
-            closeOnOverlayClick = true
-        } = {}) {
-        // Валидация элементов
-        this.overlay = document.querySelector('[data-overlay]');
+                    activeMode = "",
+                    fadeInTimeout = 300,
+                    fadeOutTimeout = 300,
+                    closeOnEsc = true,
+                    closeOnOverlayClick = true,
+                    beforeOpen = null,
+                    afterOpen = null,
+                    beforeClose = null,
+                    afterClose = null,
+                } = {}) {
+        this.overlay = document.querySelector("[data-overlay]");
         if (!this.overlay) {
-            console.error('ModalManager: Overlay element not found!');
+            console.error("ModalManager: Overlay element not found!");
             return;
         }
 
-        this.modals = document.querySelectorAll('[data-popup]');
+        this.modals = Array.from(this.overlay.querySelectorAll("[data-popup]"));
         if (this.modals.length === 0) {
-            console.warn('ModalManager: No modals found');
+            console.warn("ModalManager: No modals found inside [data-overlay]");
         }
 
-        // Настройки
-        this.activeClass = 'active';
-        this.activeMode = activeMode;
-        this.timeIn = fadeInTimeout;
-        this.timeOut = fadeOutTimeout;
-        this.closeOnEsc = closeOnEsc;
-        this.closeOnOverlayClick = closeOnOverlayClick;
-        this.currentModal = null;
+        this.activeClass = "active";
+        this.activeMode = (activeMode || "").trim();
+        this.timeIn = Number(fadeInTimeout) || 300;
+        this.timeOut = Number(fadeOutTimeout) || 300;
+        this.closeOnEsc = !!closeOnEsc;
+        this.closeOnOverlayClick = !!closeOnOverlayClick;
 
-        // Инициализация
-        this.bindEvents();
-        this.checkURLHash();
+        this.currentModal = null;
+        this._animating = false;
+
+        this.hooks = {beforeOpen, afterOpen, beforeClose, afterClose};
+
+        // удобные шорткаты на лету
+        this.on = (name, fn) => {
+            this.hooks[name] = fn;
+            return this;
+        };
+        this.off = (name) => {
+            this.hooks[name] = null;
+            return this;
+        };
+        this.once = (name, fn) => {
+            const wrap = async (payload) => {
+                try {
+                    await fn(payload);
+                } finally {
+                    this.off(name);
+                }
+            };
+            return this.on(name, wrap);
+        };
+
+        this._bindEvents();
+        this._checkURLHashOnLoad();
     }
 
-    // ==================== Основные методы ====================
-    async openModal(modalId) {
-        if (!modalId || !this.overlay) return false;
+    /* ================= helpers ================= */
 
-        const modal = this.overlay.querySelector(`[data-popup="${modalId}"]`);
+    _getModalEl(modalId) {
+        if (!modalId) return null;
+        return this.overlay.querySelector(`[data-popup="${modalId}"]`);
+    }
+
+    _visible(el) {
+        return el.classList.contains(this.activeClass) || getComputedStyle(el).display !== "none";
+    }
+
+    _setOverlayActive(on) {
+        if (on) {
+            addCustomClass(this.overlay, this.activeClass);
+            if (this.activeMode) addCustomClass(this.overlay, this.activeMode);
+            this.overlay.setAttribute("aria-hidden", "false");
+        } else {
+            removeCustomClass(this.overlay, this.activeClass);
+            if (this.activeMode) removeCustomClass(this.overlay, this.activeMode);
+            this.overlay.setAttribute("aria-hidden", "true");
+        }
+    }
+
+    _setAriaForAllHidden() {
+        this.modals.forEach(m => m.setAttribute("aria-hidden", "true"));
+        this.overlay.setAttribute("aria-hidden", "true");
+        document.querySelectorAll("[data-btn-modal]").forEach(btn => {
+            btn.setAttribute("aria-expanded", "false");
+        });
+    }
+
+    _setAriaForOpen(modal) {
+        this.modals.forEach(m => m.setAttribute("aria-hidden", "true"));
+        if (modal) modal.setAttribute("aria-hidden", "false");
+        this.overlay.setAttribute("aria-hidden", "false");
+        document.querySelectorAll("[data-btn-modal]").forEach(btn => {
+            btn.setAttribute("aria-expanded", "true");
+        });
+    }
+
+    _pushModalState(modalId) {
+        const currentHash = (window.location.hash || "").slice(1);
+        if (currentHash === modalId) return;
+        history.pushState({modal: modalId}, "", `#${modalId}`);
+    }
+
+    _replaceToPath() {
+        const url = new URL(window.location.href);
+        url.hash = "";
+        history.replaceState({}, "", url.toString());
+    }
+
+    _emit(type, id, modal) {
+        this.overlay.dispatchEvent(new CustomEvent(type, {
+            bubbles: true,
+            detail: {id, modal, manager: this},
+        }));
+    }
+
+    async _callHook(name, id, modal) {
+        const fn = this.hooks?.[name];
+        if (typeof fn === "function") {
+            try {
+                return await fn({id, modal, manager: this});
+            } catch (e) {
+                console.error(`ModalManager: hook "${name}" error`, e);
+            }
+        }
+        return undefined;
+    }
+
+    /* ================= API ================= */
+
+    async openModal(modalId) {
+        const modal = this._getModalEl(modalId);
         if (!modal) {
-            console.error(`ModalManager: Modal "${modalId}" not found`);
+            console.error(`ModalManager: Modal "${modalId}" not found inside [data-overlay]`);
+            return false;
+        }
+        if (this._animating) return false;
+        this._animating = true;
+
+        this._emit("modal:beforeopen", modalId, modal);
+        const canOpen = await this._callHook("beforeOpen", modalId, modal);
+        if (canOpen === false) {
+            this._animating = false;
             return false;
         }
 
-        // Закрываем все модалки перед открытием новой
-        await this.closeAllModals();
+        const anyOpen = this.modals.some(m => this._visible(m));
+        if (anyOpen) {
+            await this.closeAllModals({except: modalId, keepOverlay: true, force: true});
+        }
 
-        // Открываем новую
-        addCustomClass(this.overlay, this.activeClass);
-        this.activeMode && addCustomClass(this.overlay, this.activeMode);
+        this._setOverlayActive(true);
         addCustomClass(modal, this.activeClass);
-        await fadeIn(modal, this.timeIn, 'flex');
+
+        fadeIn(modal, this.timeIn, "flex");
+        await sleep(this.timeIn);
+
         disableScroll();
         this.currentModal = modal;
 
-        // Обновляем URL
-        history.pushState({modal: modalId}, '', `#${modalId}`);
-        this.toggleAriaAttributes(modal, true);
+        this._pushModalState(modalId);
+        this._setAriaForOpen(modal);
 
+        await this._callHook("afterOpen", modalId, modal);
+        this._emit("modal:afteropen", modalId, modal);
+
+        this._animating = false;
         return true;
     }
 
-    async closeAllModals() {
-        if (!this.overlay) return;
+    async closeAllModals({except = null, keepOverlay = false, force = false} = {}) {
+        if (this._animating && !force) return;
+        this._animating = true;
 
-        removeCustomClass(this.overlay, this.activeClass);
-        this.activeMode && removeCustomClass(this.overlay, this.activeMode);
-
-        const fadeOutPromises = Array.from(this.modals).map(modal => {
-            removeCustomClass(modal, this.activeClass);
-            return fadeOut(modal, this.timeOut);
+        const toClose = this.modals.filter(m => {
+            const id = m.getAttribute("data-popup");
+            if (except && id === except) return false;
+            return this._visible(m);
         });
 
-        await Promise.all(fadeOutPromises);
-        enableScroll();
-        this.currentModal = null;
-        this.toggleAriaAttributes(null, false);
+        for (const m of toClose) {
+            const id = m.getAttribute("data-popup");
+            this._emit("modal:beforeclose", id, m);
+            await this._callHook("beforeClose", id, m);
+        }
+
+        if (!keepOverlay) this._setOverlayActive(false);
+
+        toClose.forEach(m => {
+            removeCustomClass(m, this.activeClass);
+            fadeOut(m, this.timeOut);
+        });
+
+        await sleep(this.timeOut);
+
+        if (!keepOverlay) {
+            enableScroll();
+            this.currentModal = null;
+            this._setAriaForAllHidden();
+            this._replaceToPath();
+        }
+
+        for (const m of toClose) {
+            const id = m.getAttribute("data-popup");
+            await this._callHook("afterClose", id, m);
+            this._emit("modal:afterclose", id, m);
+        }
+
+        this._animating = false;
     }
 
-    // ==================== Обработчики событий ====================
-    bindEvents() {
-        // Делегирование событий для кнопок
-        document.addEventListener('click', (e) => {
-            // Обработка кнопок с data-btn-modal
-            const modalBtn = e.target.closest('[data-btn-modal], a[href^="#modal_"]');
-            if (modalBtn) {
+    /* ================= events ================= */
+
+    _bindEvents() {
+        document.addEventListener("click", (e) => {
+            const openBtn = e.target.closest('[data-btn-modal], a[href^="/modal_"]');
+            if (openBtn) {
                 e.preventDefault();
-                const modalId = modalBtn.hasAttribute('data-btn-modal')
-                    ? modalBtn.getAttribute('data-btn-modal')
-                    : modalBtn.getAttribute('href').replace('#', '');
+                const modalId = openBtn.hasAttribute("data-btn-modal")
+                    ? openBtn.getAttribute("data-btn-modal")
+                    : openBtn.getAttribute("href").slice(1);
                 this.openModal(modalId);
+                return;
             }
 
-            // Обработка внутренних кнопок
-            const innerBtn = e.target.closest('[data-btn-inner]');
+            const innerBtn = e.target.closest("[data-btn-inner]");
             if (innerBtn) {
                 e.preventDefault();
-                this.openModal(innerBtn.getAttribute('data-btn-inner'));
+                const to = innerBtn.getAttribute("data-btn-inner");
+                if (to) this.openModal(to);
             }
         });
 
-        // Клик по оверлею или кнопке закрытия
-        this.overlay.addEventListener('click', (e) => {
-            if (
-                (e.target === this.overlay && this.closeOnOverlayClick) ||
-                e.target.classList.contains('close')
-            ) {
+        this.overlay.addEventListener("click", (e) => {
+            if ((e.target === this.overlay && this.closeOnOverlayClick) || e.target.classList.contains("close")) {
                 this.closeAllModals();
-                history.replaceState({}, '', window.location.pathname);
+                this._replaceToPath();
             }
         });
 
-        // Закрытие по Escape
         if (this.closeOnEsc) {
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && this.overlay.classList.contains(this.activeClass)) {
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape" && this.overlay.classList.contains(this.activeClass)) {
                     this.closeAllModals();
-                    history.replaceState({}, '', window.location.pathname);
+                    this._replaceToPath();
                 }
             });
         }
 
-        // Обработка истории браузера
-        window.addEventListener('popstate', (e) => {
-            if (e.state?.modal) {
-                this.openModal(e.state.modal);
-            } else {
-                this.closeAllModals();
+        window.addEventListener("popstate", () => {
+            const modalId = (history.state && history.state.modal) || (window.location.hash || "").slice(1);
+            if (modalId) {
+                const modal = this._getModalEl(modalId);
+                if (modal) {
+                    this.openModal(modalId);
+                    return;
+                }
             }
+            this.closeAllModals({force: true});
         });
     }
 
-    // ==================== Вспомогательные методы ====================
-    checkURLHash() {
-        const modalId = window.location.hash.replace('#', '');
-        if (modalId && this.overlay.querySelector(`[data-popup="${modalId}"]`)) {
-            this.openModal(modalId);
+    _checkURLHashOnLoad() {
+        const modalId = (window.location.hash || "").slice(1);
+        if (modalId && modalId.startsWith("modal_")) {
+            const modal = this._getModalEl(modalId);
+            if (modal) {
+                this.openModal(modalId);
+                return;
+            }
         }
-    }
-
-    toggleAriaAttributes(modal, isOpen) {
-        if (!modal) {
-            document.querySelectorAll('[data-popup]').forEach(m => {
-                m.setAttribute('aria-hidden', 'true');
-            });
-            return;
-        }
-        modal.setAttribute('aria-hidden', 'false');
-        this.overlay.setAttribute('aria-hidden', 'false');
-        document.querySelectorAll('[data-btn-modal]').forEach(btn => {
-            btn.setAttribute('aria-expanded', isOpen);
-        });
+        this._setAriaForAllHidden();
     }
 }
-
-export default ModalManager;

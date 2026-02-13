@@ -126,31 +126,6 @@ export const toggleClassInArray = (arr, customClass = 'active') => {
 	});
 };
 
-/**
- * Устанавливает CSS-переменную на основе размеров элемента
- * @param {HTMLElement} el - Элемент для измерения
- * @param {string} variableName - Имя CSS-переменной
- * @param {string} [type='height'] - Тип измерения (height/width)
- */
-export const setVariable = (el, variableName, type = 'height') => {
-	if (el) {
-		function initListener() {
-			const rect = el.getBoundingClientRect();
-			let elementOption;
-			if (type === 'height') {
-				elementOption = rect.height;
-			}
-			if (type === 'width') {
-				elementOption = rect.width;
-			}
-			document.documentElement.style.setProperty(`--${variableName}`, `${elementOption}px`);
-		}
-
-		initListener();
-		window.addEventListener('resize', initListener);
-	}
-};
-
 
 /**
  * Реализует "липкий" (sticky) заголовок с анимацией
@@ -294,31 +269,4 @@ export const scrollToElement = (element, direction) => {
 	}
 };
 
-
-export const elementSize = (el, variableName, dimension = 'height') => {
-	// el — сам элемент (DOM node, не коллекция)
-	// variableName — имя css-переменной (строка)
-	// dimension — "width" или "height"
-
-	if (!el) return;
-
-	function updateVar() {
-		let value = 0;
-
-		if (dimension === 'width') {
-			value = el.offsetWidth;
-		} else {
-			value = el.offsetHeight;
-		}
-
-		document.documentElement.style.setProperty(`--${variableName}`, `${value}px`);
-	}
-
-	// Первичная инициализация
-	updateVar();
-
-	// Навешиваем слушатели
-	window.addEventListener('DOMContentLoaded', updateVar);
-	window.addEventListener('resize', updateVar);
-};
 

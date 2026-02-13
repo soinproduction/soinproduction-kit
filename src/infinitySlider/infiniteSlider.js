@@ -3,48 +3,142 @@ export class InfiniteSlider {
         if (!container) throw new Error('Container is required');
 
         this.container = container;
+
         this.options = {
-            direction: options.direction || 'left',
-            speed: options.speed || 0.5,
-            pauseOnHover: options.pauseOnHover || false,
-            showInfo: options.showInfo || false,
+            direction: options.direction || 'left', // left | right | up | down
+            speed: typeof options.speed === 'number' ? options.speed : 0.5,
+            pauseOnHover: !!options.pauseOnHover,
+            showInfo: !!options.showInfo,
 
             onStart: typeof options.onStart === 'function' ? options.onStart : null,
             onStop: typeof options.onStop === 'function' ? options.onStop : null,
             onTick: typeof options.onTick === 'function' ? options.onTick : null,
-            onSlideLoop: typeof options.onSlideLoop === 'function' ? options.onSlideLoop : null,
         };
 
-        this.slides = Array.from(this.container.children);
-        this.x = 0;
+        this.isVertical = this.options.direction === 'up' || this.options.direction === 'down';
+
         this.isRunning = true;
+        this._raf = 0;
 
-        this.cloneSlides();
-        this.initStyles();
-        this.bindEvents();
-        this.animate();
+        this.pos = 0;
+        this.loopSize = 0;
 
-        if (this.options.showInfo) this.showInfo();
+        this.track = null;
+        this.baseItems = [];
+        this._lastTarget = 0;
+
+        this._resizeTimer = 0;
+        this._onResize = this._onResize.bind(this);
+        this.animate = this.animate.bind(this);
+
+        this._build();
+        this._ensureFill(true);
+        this._bindEvents();
+
+        this._raf = requestAnimationFrame(this.animate);
+
+        if (this.options.showInfo) this._info();
     }
 
-    cloneSlides() {
-        this.slides.forEach(slide => {
-            const clone = slide.cloneNode(true);
-            this.container.appendChild(clone);
-        });
-        this.slides = Array.from(this.container.children);
+    _build() {
+        this.container.style.overflow = 'hidden';
+        if (!this.container.style.position) this.container.style.position = 'relative';
+
+        const track = document.createElement('div');
+        track.className = 'infinite-slider__track';
+        track.style.willChange = 'transform';
+        track.style.display = 'flex';
+        track.style.flexDirection = this.isVertical ? 'column' : 'row';
+
+        const children = Array.from(this.container.children);
+        children.forEach((node) => track.appendChild(node));
+        this.container.appendChild(track);
+
+        this.track = track;
+        this.baseItems = Array.from(this.track.children);
     }
 
-    initStyles() {
-        this.container.style.display = 'flex';
-        this.container.style.willChange = 'transform';
+    _containerSize() {
+        return this.isVertical ? this.container.clientHeight : this.container.clientWidth;
     }
 
-    bindEvents() {
+    _itemSize(el) {
+        return this.isVertical ? el.offsetHeight : el.offsetWidth;
+    }
+
+    _sumSize(els) {
+        let sum = 0;
+        els.forEach((el) => { sum += this._itemSize(el); });
+        return sum;
+    }
+
+    _getAllItems() {
+        return Array.from(this.track.children);
+    }
+
+    _applyTransform() {
+        const x = this.isVertical ? 0 : this.pos;
+        const y = this.isVertical ? this.pos : 0;
+        this.track.style.transform = `translate3d(${x}px, ${y}px, 0px)`;
+    }
+
+    _ensureFill(force = false) {
+        if (!this.baseItems.length) return;
+        const baseSize = this._sumSize(this.baseItems);
+        if (baseSize <= 0) {
+            requestAnimationFrame(() => this._ensureFill(force));
+            return;
+        }
+
+        const target = this._containerSize() * 3;
+
+        if (!force && this._lastTarget >= target) {
+            this.loopSize = this._sumSize(this.baseItems);
+            if (this.loopSize > 0) this._normalizePos();
+            this._applyTransform();
+            return;
+        }
+
+        this.loopSize = baseSize;
+        let all = this._getAllItems();
+        if (all.length === this.baseItems.length) {
+            this.baseItems.forEach((el) => this.track.appendChild(el.cloneNode(true)));
+            all = this._getAllItems();
+        }
+
+        while (this._sumSize(all) < target) {
+            this.baseItems.forEach((el) => this.track.appendChild(el.cloneNode(true)));
+            all = this._getAllItems();
+        }
+
+        this._lastTarget = target;
+        this._normalizePos();
+        this._applyTransform();
+    }
+
+    _normalizePos() {
+        if (!this.loopSize) return;
+        if (this.pos <= -this.loopSize) this.pos = this.pos % this.loopSize;
+        if (this.pos > 0) this.pos = -((Math.abs(this.pos) % this.loopSize));
+    }
+
+    _bindEvents() {
         if (this.options.pauseOnHover) {
             this.container.addEventListener('mouseenter', () => this.stop());
             this.container.addEventListener('mouseleave', () => this.start());
         }
+
+        window.addEventListener('resize', this._onResize, { passive: true });
+        window.addEventListener('load', () => {
+            this._ensureFill(true);
+        }, { once: true });
+    }
+
+    _onResize() {
+        clearTimeout(this._resizeTimer);
+        this._resizeTimer = setTimeout(() => {
+            this._ensureFill(false);
+        }, 150);
     }
 
     start() {
@@ -63,68 +157,53 @@ export class InfiniteSlider {
 
     destroy() {
         this.stop();
-        this.container.style.transform = '';
-        this.container.innerHTML = '';
-        this.slides = [];
-        if (this.options.showInfo) {
-            console.log('🧹 InfiniteSlider destroyed.');
+        cancelAnimationFrame(this._raf);
+        this._raf = 0;
+
+        clearTimeout(this._resizeTimer);
+        window.removeEventListener('resize', this._onResize);
+
+        if (this.track) {
+            const kids = Array.from(this.track.children);
+            this.container.innerHTML = '';
+            this.baseItems.forEach((el) => this.container.appendChild(el));
+
+            this.track.remove();
+            this.track = null;
         }
+
+        this.container.style.overflow = '';
+        this.container.style.position = '';
     }
 
-    animate = () => {
-        if (this.isRunning) {
-            this.x += this.options.direction === 'left' ? -this.options.speed : this.options.speed;
-            this.container.style.transform = `translateX(${this.x}px)`;
+    animate() {
+        this._raf = requestAnimationFrame(this.animate);
 
-            if (this.options.onTick) this.options.onTick(this.x);
+        if (!this.isRunning) return;
+        if (!this.loopSize) return;
 
-            const firstSlide = this.slides[0];
-            const lastSlide = this.slides[this.slides.length - 1];
+        const dir = this.options.direction;
+        const speed = this.options.speed;
 
-            if (!firstSlide || !lastSlide) return;
+        if (dir === 'left') this.pos -= speed;
+        if (dir === 'right') this.pos += speed;
+        if (dir === 'up') this.pos -= speed;
+        if (dir === 'down') this.pos += speed;
 
-            const firstRect = firstSlide.getBoundingClientRect();
-            const lastRect = lastSlide.getBoundingClientRect();
+        if (this.pos <= -this.loopSize) this.pos += this.loopSize;
+        if (this.pos >= 0) this.pos -= this.loopSize;
 
-            if (this.options.direction === 'left' && firstRect.right < 0) {
-                this.container.appendChild(firstSlide);
-                this.slides.push(this.slides.shift());
-                this.x += firstRect.width;
-                this.container.style.transform = `translateX(${this.x}px)`;
-                if (this.options.onSlideLoop) this.options.onSlideLoop('left');
-            }
+        this._applyTransform();
 
-            if (this.options.direction === 'right' && lastRect.left > window.innerWidth) {
-                this.container.insertBefore(lastSlide, this.slides[0]);
-                this.slides.unshift(this.slides.pop());
-                this.x -= lastRect.width;
-                this.container.style.transform = `translateX(${this.x}px)`;
-                if (this.options.onSlideLoop) this.options.onSlideLoop('right');
-            }
-        }
+        if (this.options.onTick) this.options.onTick(this.pos);
+    }
 
-        requestAnimationFrame(this.animate);
-    };
-
-    showInfo() {
-        console.groupCollapsed('%c🌀 InfiniteSlider Info', 'color: #06f; font-weight: bold');
-        console.log('%cOptions:', 'color: #999', this.options);
-        console.log('%cPublic methods:', 'color: #999');
-        console.table([
-            { name: 'start()', desc: 'Запускает слайдер' },
-            { name: 'stop()', desc: 'Останавливает слайдер' },
-            { name: 'destroy()', desc: 'Полностью удаляет слайдер и обнуляет контейнер' },
-        ]);
-        console.log('%cEvents (через options):', 'color: #999');
-        console.table([
-            {name: 'direction', desc: 'Настройка направлнеия left / right'},
-            {name: 'speed', desc: '0.5 Настройки скорости'},
-            {name: 'pauseOnHover', desc: 'Остановка при наведении'},
-            {name: 'onStart', desc: 'Вызывается при старте'},
-            {name: 'onStop', desc: 'Вызывается при остановке'},
-            {name: 'onTick', desc: 'Вызывается каждый кадр с текущим X'},
-            {name: 'onSlideLoop', desc: 'Вызывается при перемещении слайда в конец/начало'},
-        ]);
+    _info() {
+        console.groupCollapsed('%c🌀 InfiniteSlider', 'color:#06f;font-weight:bold');
+        console.log('direction:', this.options.direction);
+        console.log('isVertical:', this.isVertical);
+        console.log('loopSize:', this.loopSize);
+        console.log('baseItems:', this.baseItems.length);
         console.groupEnd();
     }
-};
+}

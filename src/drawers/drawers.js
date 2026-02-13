@@ -1,22 +1,26 @@
 import { enableScroll } from "../functions/enable-scroll.js";
 import { disableScroll } from "../functions/disable-scroll.js";
 
+/**
+ * AdditionalToggle
+ * Поддерживает множественные target'ы (селекторы через запятую, NodeList, массив HTMLElements).
+ */
 export class AdditionalToggle {
     /**
      * @param {Object} cfg
      * @param {Array<{
-     *   trigger:string|HTMLElement|NodeList|Array,
-     *   target:string|HTMLElement,
-     *   close?:string|HTMLElement|NodeList|Array,
-     *   targetActiveClass?:string,
-     *   overlayExtraClass?:string,
-     *   scroll?:boolean,
-     *   overlay?:boolean,
-     *   clickOnOverlay?:boolean,
-     *   beforeOpen?:Function,
-     *   afterOpen?:Function,
-     *   beforeClose?:Function,
-     *   afterClose?:Function
+     *   trigger: string|HTMLElement|NodeList|Array<HTMLElement>,
+     *   target:  string|HTMLElement|NodeList|Array<HTMLElement>, // ← можно перечислять через ',' или передавать список
+     *   close?:  string|HTMLElement|NodeList|Array<HTMLElement>,
+     *   targetActiveClass?: string,
+     *   overlayExtraClass?: string,
+     *   scroll?: boolean,
+     *   overlay?: boolean,
+     *   clickOnOverlay?: boolean,
+     *   beforeOpen?: Function,
+     *   afterOpen?: Function,
+     *   beforeClose?: Function,
+     *   afterClose?: Function
      * }>} cfg.items
      * @param {string|HTMLElement|null} [cfg.overlay=null]
      * @param {string} [cfg.activeClass='active']
@@ -96,7 +100,9 @@ export class AdditionalToggle {
 
     _safeCall(fn, arg) {
         if (typeof fn !== "function") return undefined;
-        try { return fn(arg); } catch (e) {
+        try {
+            return fn(arg);
+        } catch (e) {
             console.error("[AdditionalToggle hook error]:", e);
             return undefined;
         }
@@ -104,17 +110,17 @@ export class AdditionalToggle {
 
     /**
      * Пересчитать состояние overlay с учётом открытых инстансов.
-     * Включает/выключает overlay и единожды добавляет overlayExtraClass текущего открытого инстанса (если есть).
+     * Включает/выключает overlay и добавляет overlayExtraClass текущего открытого инстанса (если есть).
      */
     _syncOverlayState() {
         if (!this.overlay) return;
 
-        // очистить все возможные overlayExtraClass
+        // убрать все возможные overlayExtraClass
         for (const it of this.instances) {
             if (it.overlayExtraClass) this.overlay.classList.remove(it.overlayExtraClass);
         }
 
-        // найти открытый инстанс, который использует overlay
+        // найти открытый инстанс, использующий overlay
         const current = this.instances.find((it) => it.isOpen && it.overlay === true);
 
         if (current) {
@@ -132,7 +138,7 @@ export class AdditionalToggle {
      * @returns {boolean} true — закрыл, false — отменено хуком/нечего закрывать
      */
     _closeInstance(inst) {
-        if (!inst || !inst.target || !inst.isOpen) return true;
+        if (!inst || !inst.targets.length || !inst.isOpen) return true;
 
         // beforeClose: глобальный → item
         const g = this._safeCall(this.gHooks.beforeClose, inst);
@@ -142,14 +148,13 @@ export class AdditionalToggle {
 
         inst.isOpen = false;
 
-        inst.target.classList.remove(inst.targetClass);
+        inst.targets.forEach((t) => t.classList.remove(inst.targetClass));
         inst.triggers.forEach((t) => t.classList.remove(this.activeClass));
 
         if (inst.scroll === true) {
             enableScroll();
         }
 
-        // пересчитать overlay (учитываем per-item overlay)
         this._syncOverlayState();
 
         // afterClose: item → глобальный
@@ -163,7 +168,7 @@ export class AdditionalToggle {
      * Открыть конкретный инстанс. Предварительно пытается закрыть остальные.
      */
     _openInstance(inst) {
-        if (!inst || !inst.target) return;
+        if (!inst || !inst.targets.length) return;
 
         // закрыть все прочие без учёта clickOnOverlay (force=true)
         const allClosed = this.closeAll(true);
@@ -177,14 +182,13 @@ export class AdditionalToggle {
 
         inst.isOpen = true;
 
-        inst.target.classList.add(inst.targetClass);
+        inst.targets.forEach((t) => t.classList.add(inst.targetClass));
         inst.triggers.forEach((t) => t.classList.add(this.activeClass));
 
         if (inst.scroll === true) {
             disableScroll();
         }
 
-        // пересчитать overlay (включаем только если inst.overlay === true)
         this._syncOverlayState();
 
         // afterOpen: item → глобальный
@@ -201,13 +205,13 @@ export class AdditionalToggle {
 
         this.instances = this.itemsConfig.map((item) => {
             const triggers = this._getElements(item.trigger);
-            const target = this._getElement(item.target);
+            const targets = this._getElements(item.target); // ← множественные цели
             const closes = this._getElements(item.close);
 
             const targetClass = (item.targetActiveClass || this.activeClass).toString().trim() || this.activeClass;
             const overlayExtraClass = (item.overlayExtraClass || "").toString().trim();
 
-            // NEW: overlay / clickOnOverlay (оба по умолчанию true)
+            // overlay / clickOnOverlay (по умолчанию true)
             const overlay = item.overlay === false ? false : true;
             const clickOnOverlay = item.clickOnOverlay === false ? false : true;
 
@@ -222,12 +226,12 @@ export class AdditionalToggle {
 
             return {
                 triggers,
-                target,
+                targets,
                 closes,
                 targetClass,
                 overlayExtraClass,
-                overlay,          // NEW
-                clickOnOverlay,   // NEW
+                overlay,
+                clickOnOverlay,
                 scroll,
                 hooks,
                 isOpen: false
@@ -236,8 +240,8 @@ export class AdditionalToggle {
 
         // обработчики на триггеры/close
         this.instances.forEach((inst) => {
-            const { triggers, closes, target } = inst;
-            if (!target || !triggers.length) return;
+            const { triggers, closes, targets } = inst;
+            if (!targets.length || !triggers.length) return;
 
             triggers.forEach((btn) => {
                 this._on(btn, "click", (e) => {
@@ -267,10 +271,9 @@ export class AdditionalToggle {
             this.instances.forEach((inst) => {
                 if (!inst.isOpen) return;
 
-                const insideTarget = inst.target?.contains(e.target);
+                const insideTarget = inst.targets.some((t) => t.contains(e.target));
                 const insideTrigger = inst.triggers.some((t) => t.contains(e.target));
 
-                // закрываем кликом-вне только если разрешено для этого инстанса
                 if (!insideTarget && !insideTrigger && inst.clickOnOverlay === true) {
                     const ok = this._closeInstance(inst);
                     if (ok) changed = true;
@@ -298,7 +301,7 @@ export class AdditionalToggle {
             this.overlay.addEventListener("click", this._boundOverlayClick);
         }
 
-        // на всякий случай привести overlay к корректному начальному состоянию
+        // привести overlay к корректному начальному состоянию
         this._syncOverlayState();
     }
 
@@ -316,7 +319,6 @@ export class AdditionalToggle {
             if (!ok) allClosed = false;
         });
 
-        // синхронизация overlay
         this._syncOverlayState();
 
         return allClosed;
@@ -360,12 +362,11 @@ export class AdditionalToggle {
             return this.instances[ref] || null;
         }
         if (typeof ref === "string") {
-            return this.instances.find(inst => inst.target?.matches(ref)) || null;
+            return this.instances.find((inst) => inst.targets.some((t) => t.matches(ref))) || null;
         }
         if (ref instanceof HTMLElement) {
-            return this.instances.find(inst => inst.target === ref) || null;
+            return this.instances.find((inst) => inst.targets.includes(ref)) || null;
         }
         return null;
     }
-
 }
