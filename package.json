@@ -1,14 +1,33 @@
 {
   "name": "@soinproduction/kit",
-  "version": "1.1.05",
+  "version": "1.1.06",
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json",
+    "./content-switcher": "./dist/src/content-switcher/contentSwitcher.js",
+    "./contentSwitcher": "./dist/src/content-switcher/contentSwitcher.js",
+    "./drawers": "./dist/src/drawers/drawers.js",
+    "./infinity-slider": "./dist/src/infinitySlider/infiniteSlider.js",
+    "./infinitySlider": "./dist/src/infinitySlider/infiniteSlider.js",
+    "./custom-select": "./dist/src/custom-select/select.js",
+    "./customSelect": "./dist/src/custom-select/select.js",
+    "./read-more": "./dist/src/read-more-admin/read-more.js",
+    "./readMore": "./dist/src/read-more-admin/read-more.js",
+    "./modals": "./dist/src/modals/modals.js",
+    "./functions": "./dist/src/functions/index.js",
+    "./functions/*": "./dist/src/functions/*.js",
+    "./functions/scripts": "./dist/src/functions/scripts/index.js",
+    "./functions/scripts/*": "./dist/src/functions/scripts/*.js",
+    "./src/*": "./dist/src/*"
+  },
   "files": [
     "dist",
-    "src",
     "*.md"
   ],
   "scripts": {
-    "build": "rollup -c"
+    "clean": "rm -rf dist",
+    "build": "npm run clean && rollup -c"
   },
   "type": "module",
   "publishConfig": {

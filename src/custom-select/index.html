@@ -20,11 +20,8 @@
         </li>
     </ul>
 </div>
-
-a5zbC9ouRj
-
 <script>
-    import CustomSelect, { selectInstace } from "@soinproduction/kit";
+    import { CustomSelect, selectInstance } from "@soinproduction/kit";
 
     const tagsSelect = new CustomSelect( ' SelectEl ', {
         mode: 'multiple', // single / multiple
@@ -41,5 +38,5 @@ a5zbC9ouRj
         showInfo: false // выводит info методов в консоль
     });
 
-    const currentSelect = [...selectInstace.values()].find((instance) => instance.config.name === ' input name '); // для получения конкретного селекта
+    const currentSelect = [...selectInstance.values()].find((instance) => instance.config.name === ' input name '); // для получения конкретного селекта
 </script>

@@ -1,4 +1,5 @@
 export const selectInstace = new Map();
+export const selectInstance = selectInstace;
 
 export class CustomSelect {
     /**
@@ -434,4 +435,3 @@ export class CustomSelect {
     #onOptionsClick = null;
     #onFormReset = null;
 }
-
