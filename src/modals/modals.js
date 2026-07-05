@@ -67,7 +67,33 @@ export class ModalManager {
 
     _getModalEl(modalId) {
         if (!modalId) return null;
-        return this.overlay.querySelector(`[data-popup="${modalId}"]`);
+        const safeModalId = window.CSS?.escape ? CSS.escape(modalId) : modalId.replace(/["\\]/g, "\\$&");
+        return this.overlay.querySelector(`[data-popup="${safeModalId}"]`);
+    }
+
+    _getModalIdFromTrigger(trigger) {
+        if (!trigger) return "";
+
+        if (trigger.hasAttribute("data-btn-modal")) {
+            return (trigger.getAttribute("data-btn-modal") || "").trim();
+        }
+
+        const href = (trigger.getAttribute("href") || "").trim();
+        if (!href) return "";
+
+        if (href.startsWith("#")) {
+            return href.slice(1);
+        }
+
+        try {
+            const url = new URL(href, window.location.href);
+            if (url.hash) return url.hash.slice(1);
+
+            const parts = url.pathname.split("/").filter(Boolean);
+            return parts.pop() || "";
+        } catch (e) {
+            return href.replace(/^\/+|\/+$/g, "");
+        }
     }
 
     _visible(el) {
@@ -221,14 +247,14 @@ export class ModalManager {
 
     _bindEvents() {
         document.addEventListener("click", (e) => {
-            const openBtn = e.target.closest('[data-btn-modal], a[href^="/modal_"]');
+            const openBtn = e.target.closest('[data-btn-modal], a[href^="#"], a[href^="/"]');
             if (openBtn) {
-                e.preventDefault();
-                const modalId = openBtn.hasAttribute("data-btn-modal")
-                    ? openBtn.getAttribute("data-btn-modal")
-                    : openBtn.getAttribute("href").slice(1);
-                this.openModal(modalId);
-                return;
+                const modalId = this._getModalIdFromTrigger(openBtn);
+                if (modalId && this._getModalEl(modalId)) {
+                    e.preventDefault();
+                    this.openModal(modalId);
+                    return;
+                }
             }
 
             const innerBtn = e.target.closest("[data-btn-inner]");
@@ -270,7 +296,7 @@ export class ModalManager {
 
     _checkURLHashOnLoad() {
         const modalId = (window.location.hash || "").slice(1);
-        if (modalId && modalId.startsWith("modal_")) {
+        if (modalId) {
             const modal = this._getModalEl(modalId);
             if (modal) {
                 this.openModal(modalId);
