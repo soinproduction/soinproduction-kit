@@ -1,16 +1,16 @@
 # @soinproduction/kit
 
-Modular front-end kit for WordPress/theme work: lifecycle-aware UI controllers, DOM helpers, scroll locking, AJAX utilities, and small production scripts.
+Модульный front-end kit для WordPress-тем и обычных проектов: UI-контроллеры с lifecycle-хуками, DOM-хелперы, блокировка скролла, AJAX-утилиты и небольшие production-скрипты.
 
-The package has no default export. Use named imports from the root entry or preferred subpath imports.
+У пакета нет default export. Используй named imports из корневого entrypoint или, что лучше для проектов, subpath imports.
 
-## Install
+## Установка
 
 ```bash
 npm i @soinproduction/kit
 ```
 
-## Quick Start
+## Быстрый старт
 
 ```js
 import { Switcher } from '@soinproduction/kit/content-switcher';
@@ -46,16 +46,16 @@ const modals = new ModalManager({
 });
 ```
 
-## Documentation
+## Документация
 
-Start here:
+Начинай отсюда:
 
-- [Documentation index](docs/README.md)
-- [Import map](docs/imports.md)
-- [Publishing and release checklist](docs/publishing.md)
-- [Migration notes](docs/migration.md)
+- [Индекс документации](docs/README.md)
+- [Карта импортов](docs/imports.md)
+- [Публикация и release checklist](docs/publishing.md)
+- [Заметки по миграции](docs/migration.md)
 
-Components:
+Компоненты:
 
 - [Switcher](docs/components/switcher.md)
 - [AdditionalToggle](docs/components/additional-toggle.md)
@@ -64,12 +64,14 @@ Components:
 - [InfiniteSlider](docs/components/infinite-slider.md)
 - [ReadMore](docs/components/read-more.md)
 
-Functions and scripts:
+Функции и скрипты:
 
-- [DOM and scroll helpers](docs/functions/helpers.md)
+- [DOM и scroll helpers](docs/functions/helpers.md)
 - [Scripts](docs/functions/scripts.md)
 
-## Entrypoints
+## Entry Points
+
+Корневой импорт:
 
 ```js
 import {
@@ -82,7 +84,7 @@ import {
 } from '@soinproduction/kit';
 ```
 
-Preferred subpath imports:
+Рекомендуемый формат - subpath imports:
 
 ```js
 import { Switcher } from '@soinproduction/kit/content-switcher';
@@ -95,15 +97,15 @@ import { disableScroll, enableScroll } from '@soinproduction/kit/functions';
 import { AnchorObserver, cf7Reinit, loaderInstanse } from '@soinproduction/kit/functions/scripts';
 ```
 
-## Demo and Source Assets
+## Demo и Source Assets
 
-Demo HTML and SCSS files are published through `src/*`:
+Demo HTML и SCSS публикуются через `src/*`:
 
 ```js
 import '@soinproduction/kit/src/custom-select/select.scss';
 ```
 
-Useful paths:
+Полезные пути:
 
 ```txt
 @soinproduction/kit/src/content-switcher/index.html
@@ -113,17 +115,16 @@ Useful paths:
 @soinproduction/kit/src/infinitySlider/slider.html
 ```
 
-## Local Development
+## Локальная разработка
 
 ```bash
 npm run build
 npm pack --dry-run --cache /private/tmp/soinproduction-kit-npm-cache
 ```
 
-## Publish
+## Публикация
 
 ```bash
 npm login
 npm publish --access public --cache /private/tmp/soinproduction-kit-npm-cache
 ```
-

@@ -1,24 +1,33 @@
-# Publishing
+# Публикация
 
 ## Preflight
 
+Проверь версию:
+
 ```bash
-cd "/Users/soinp/Documents/My plugins/soinproduction-kit"
-node --check src/content-switcher/contentSwitcher.js
-node --check src/drawers/drawers.js
-node --check src/modals/modals.js
+npm view @soinproduction/kit version
+node -p "require('./package.json').version"
+```
+
+Если текущая версия уже опубликована, подними patch/minor/major:
+
+```bash
+npm version patch --no-git-tag-version
+```
+
+Собери пакет:
+
+```bash
 npm run build
+```
+
+Проверь tarball:
+
+```bash
 npm pack --dry-run --cache /private/tmp/soinproduction-kit-npm-cache
 ```
 
-Check that the tarball contains:
-
-- `dist`
-- `docs`
-- `package.json`
-- `readme.md`
-
-It must not contain local secrets such as recovery codes.
+В списке должны быть `dist`, `docs`, `package.json` и `readme.md`.
 
 ## Login
 
@@ -27,11 +36,7 @@ npm login
 npm whoami
 ```
 
-Expected account:
-
-```txt
-soinproduction
-```
+Если включен 2FA на publish, npm попросит OTP из authenticator.
 
 ## Publish
 
@@ -39,18 +44,23 @@ soinproduction
 npm publish --access public --cache /private/tmp/soinproduction-kit-npm-cache
 ```
 
-## Update a Project
+С OTP:
 
-From the project folder that owns `package.json`:
+```bash
+npm publish --access public --otp=123456 --cache /private/tmp/soinproduction-kit-npm-cache
+```
+
+## Обновление проекта
+
+После публикации в downstream-проекте:
 
 ```bash
 npm install @soinproduction/kit@latest
 npm run build
 ```
 
-For a fixed version:
+Для точной версии:
 
 ```bash
-npm install @soinproduction/kit@1.1.9
+npm install @soinproduction/kit@1.1.10
 ```
-

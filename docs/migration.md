@@ -1,81 +1,103 @@
-# Migration Notes
+# Заметки по миграции
 
-## Version 1.1.9
+## Version 1.1.10
 
-This version expands `Switcher`, `AdditionalToggle`, and `ModalManager` without removing the old entrypoints.
+Релиз расширяет `Switcher`, `AdditionalToggle` и `ModalManager`, а также добавляет полноценную документацию внутри npm-пакета.
 
 ## Switcher
 
-Old click-based tabs and accordions continue to work.
+Добавлено:
 
-New features:
+- `triggerEvent: 'click' | 'hover'`;
+- несколько trigger-кнопок и несколько content-блоков на один id;
+- `afterOpen`, который ждет завершения `max-height` transition;
+- `afterClose`, который теперь тоже ждет завершения закрывающего transition;
+- `_waitTransition(content, property)`;
+- `resetMaxHeightAfterOpen`;
+- `breakpoints` для переопределения любых настроек.
 
-- `triggerEvent: 'click' | 'hover'`
-- multiple triggers and multiple content nodes per id
-- `afterOpen`
-- transition-aware `afterOpen/afterClose` for accordion `max-height`
-- `resetMaxHeightAfterOpen`
-- `breakpoints`
+Важно: `breakpoints` у `Switcher` работают как max-width overrides. Например ключ `768` применится при `window.innerWidth <= 768`.
 
-Important behavior:
-
-- `ctx.btn` and `ctx.content` still exist for backward compatibility.
-- New code should use `ctx.buttons` and `ctx.contents` when multiple elements share one id.
+```js
+new Switcher('[data-switcher]', {
+  triggerEvent: 'hover',
+  breakpoints: {
+    768: {
+      triggerEvent: 'click',
+      single: false,
+    },
+  },
+});
+```
 
 ## AdditionalToggle
 
-Old constructor shape still works:
+Добавлено:
+
+- `triggerEvent: 'click' | 'hover' | 'both'`;
+- hover delays и safe area;
+- `waitTransition`, `transitionTarget`, `transitionProperty`;
+- Promise API для `open`, `close`, `toggle`, `closeAll`;
+- `single` и `group`;
+- `enabled`;
+- `autoA11y`;
+- `focusOnOpen`, `returnFocusOnClose`;
+- rich hook context;
+- mobile-first `breakpoints`.
+
+Важно: `breakpoints` у `AdditionalToggle` работают mobile-first. Настройки применяются каскадно при `window.innerWidth >= breakpoint`.
 
 ```js
 new AdditionalToggle({
-  overlay: '[data-overlay]',
   items: [
     {
-      trigger: '[data-open]',
-      target: '[data-panel]',
-      close: '[data-close]',
+      trigger: '[data-menu-toggle]',
+      target: '[data-menu]',
+      breakpoints: {
+        1024: {
+          triggerEvent: 'hover',
+          closeOnLeave: true,
+        },
+      },
     },
   ],
 });
 ```
 
-Changes to know:
-
-- `open`, `close`, `toggle`, and `closeAll` now return `Promise<boolean>`.
-- Hooks receive `ctx` instead of the raw instance. The instance is available as `ctx.instance`.
-- `closeAll(true)` still works; object syntax is preferred: `closeAll({ force: true })`.
-- Trigger and close may be the same element; trigger behavior wins.
-
 ## ModalManager
 
-Old aliases remain:
+Добавлено:
+
+- `animationMode: 'js-fade' | 'css-class'`;
+- transition-aware lifecycle;
+- `beforeOpen`, `onOpen`, `afterOpen`, `beforeClose`, `onClose`, `afterClose`;
+- `animationStrategy: 'ignore' | 'queue' | 'interrupt'`;
+- `switchTo`;
+- `history`, `hash`, `hashMode`, `closeOnBack`, `openOnHashLoad`;
+- `focusOnOpen`, `returnFocusOnClose`, `trapFocus`, `inertBackground`;
+- `autoA11y`;
+- per-modal config через `modals`.
+
+Если раньше использовалась только JS fade-анимация, старый сценарий продолжит работать через default `animationMode: 'js-fade'`.
+
+Для CSS transition лучше перейти на:
 
 ```js
-modals.openModal('search');
-modals.closeAllModals();
+new ModalManager({
+  animationMode: 'css-class',
+  waitTransition: true,
+  transitionTarget: 'modal',
+  transitionProperty: 'opacity',
+});
 ```
 
-Preferred new API:
+## Публикация
 
-```js
-await modals.open('search');
-await modals.close();
-await modals.closeAll({ force: true });
-```
-
-Changes to know:
-
-- Hooks now receive rich `ctx`.
-- `animationMode: 'js-fade'` is the default for backward behavior.
-- Use `animationMode: 'css-class'` when CSS should fully control modal transitions.
-- Hash/history can be disabled with `history: false, hash: false`.
-
-## Publishing
-
-Before publishing:
+Перед publish обязательно:
 
 ```bash
 npm run build
 npm pack --dry-run --cache /private/tmp/soinproduction-kit-npm-cache
 ```
 
+`dist` не хранится в git, но публикуется в npm tarball через `files`.

@@ -1,44 +1,46 @@
 # InfiniteSlider
 
-`InfiniteSlider` creates a continuously moving loop by cloning the original children until the track can scroll seamlessly.
+Импорт:
 
 ```js
 import { InfiniteSlider } from '@soinproduction/kit/infinity-slider';
 ```
 
+`InfiniteSlider` создает бесконечно движущийся slider/marquee. Он оборачивает children в track, дублирует элементы для бесшовного движения и управляет animation loop.
+
 ## Markup
 
 ```html
-<div data-marquee>
-  <span>Brand A</span>
-  <span>Brand B</span>
-  <span>Brand C</span>
+<div data-infinite-slider>
+  <div>Item 1</div>
+  <div>Item 2</div>
+  <div>Item 3</div>
 </div>
 ```
 
-## Usage
+## Использование
 
 ```js
-const slider = new InfiniteSlider(document.querySelector('[data-marquee]'), {
+const slider = new InfiniteSlider('[data-infinite-slider]', {
   direction: 'left',
-  speed: 0.5,
+  speed: 0.6,
   pauseOnHover: true,
 });
 ```
 
 ## Options
 
-| Option | Default | Description |
+| Option | Default | Описание |
 | --- | --- | --- |
-| `direction` | `'left'` | `'left'`, `'right'`, `'up'`, or `'down'`. |
-| `speed` | `0.5` | Pixels per animation frame. |
-| `pauseOnHover` | `false` | Pause on hover and resume on leave. |
-| `showInfo` | `false` | Log debug info. |
-| `onStart` | `null` | Called when restarted. |
-| `onStop` | `null` | Called when stopped. |
-| `onTick` | `null` | Called with current position each frame. |
+| `direction` | `'left'` | `'left'` или `'right'`. |
+| `speed` | `0.5` | Скорость движения. |
+| `pauseOnHover` | `false` | Останавливать slider при hover. |
+| `showInfo` | `false` | Debug-информация. |
+| `onStart` | `null` | Callback при старте. |
+| `onStop` | `null` | Callback при остановке. |
+| `onTick` | `null` | Callback на каждом frame. |
 
-## Methods
+## Методы
 
 ```js
 slider.start();
@@ -48,7 +50,6 @@ slider.destroy();
 
 ## Notes
 
-- The container is set to `overflow: hidden`.
-- Children are wrapped in `.infinite-slider__track`.
-- On destroy, original base items are restored to the container.
-
+- Контроллер добавляет `.infinite-slider__track`.
+- Для корректной работы контейнеру обычно нужен `overflow: hidden`.
+- Если элементы содержат изображения, инициализацию лучше запускать после загрузки критичных assets.

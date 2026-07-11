@@ -1,75 +1,73 @@
 # CustomSelect
 
-`CustomSelect` turns custom markup into a single or multiple select with selected value rendering and hidden input synchronization.
+Импорт:
 
 ```js
-import { CustomSelect, selectInstance } from '@soinproduction/kit/custom-select';
-import '@soinproduction/kit/src/custom-select/select.scss';
+import { CustomSelect, selectInstace, selectInstance } from '@soinproduction/kit/custom-select';
 ```
+
+`CustomSelect` создает кастомный select поверх markup и синхронизирует выбранные значения с hidden input. Поддерживает single/multiple режимы, remove button, placeholder, callbacks и программное управление.
 
 ## Markup
 
 ```html
-<div class="custom-select" data-category-select>
-  <div class="select-field">
-    <div class="selected-options">
-      <span class="placeholder">Choose item</span>
-    </div>
+<div class="custom-select" data-custom-select data-name="service">
+  <button type="button" data-custom-select-current>Select service</button>
+  <div data-custom-select-dropdown>
+    <button type="button" data-custom-select-option value="design">Design</button>
+    <button type="button" data-custom-select-option value="dev">Development</button>
   </div>
-
-  <div class="options-container">
-    <div class="option" data-value="design">
-      <span class="option-text">Design</span>
-    </div>
-    <div class="option" data-value="development">
-      <span class="option-text">Development</span>
-    </div>
-  </div>
-
-  <div class="selected-values"></div>
+  <input type="hidden" name="service" data-custom-select-input>
 </div>
 ```
 
-## Usage
+Для multiple:
+
+```html
+<div data-custom-select data-mode="multiple" data-name="services">
+  ...
+</div>
+```
+
+## Использование
 
 ```js
-const select = new CustomSelect('[data-category-select]', {
-  mode: 'multiple',
-  placeholder: 'Choose categories',
-  name: 'categories',
-  onSelect(value) {},
-  onRemove(value) {},
+const select = new CustomSelect('[data-custom-select]', {
+  mode: 'single',
+  placeholder: 'Choose option',
+  onSelect(value, ctx) {},
+  onRemove(value, ctx) {},
 });
 ```
 
+`selectInstace` и `selectInstance` хранят instances в `Map`.
+
 ## Options
 
-| Option | Default | Description |
+| Option | Default | Описание |
 | --- | --- | --- |
-| `mode` | `'multiple'` | `'multiple'` or `'single'`. |
-| `showRemoveButton` | `true` | Render remove button inside selected chips. |
-| `placeholder` | `'Выберите элемент'` | Placeholder label. |
-| `onSelect` | `null` | Called with selected value. |
-| `onRemove` | `null` | Called with removed value. |
-| `hideOnSelect` | `false` | Single mode: close dropdown after select. |
-| `hideOnClear` | `false` | Close dropdown after clearing last value. |
-| `name` | `'custom-select-value'` | Hidden input name. |
-| `showInfo` | `false` | Log methods table. |
+| `mode` | `'single'` | `'single'` или `'multiple'`. |
+| `showRemoveButton` | `true` | Показывать кнопку удаления выбранного значения. |
+| `placeholder` | `''` | Текст, когда ничего не выбрано. |
+| `onSelect` | `null` | Callback при выборе. |
+| `onRemove` | `null` | Callback при удалении. |
+| `hideOnSelect` | `true` | Закрывать dropdown после выбора. |
+| `hideOnClear` | `true` | Закрывать dropdown после clear. |
+| `name` | `null` | Имя hidden input. |
+| `showInfo` | `false` | Включить debug-информацию. |
 
-## Methods
+## Методы
 
 ```js
-select.onSelect((value) => {});
-select.onRemove((value) => {});
-
 select.setValue('design');
-select.setValues(['design', 'development']);
-select.getValues();
+select.setValues(['design', 'dev']);
 select.clear();
 select.reset();
 
-select.disableOptions(['design']);
-select.enableOptions('design');
+select.getValues();
+
+select.disableOptions(['dev']);
+select.enableOptions(['dev']);
 select.enableAllOptions();
 
 select.toggleDropdown();
@@ -77,9 +75,15 @@ select.closeDropdown();
 select.destroy();
 ```
 
+Callbacks:
+
+```js
+select.onSelect((value, ctx) => {});
+select.onRemove((value, ctx) => {});
+```
+
 ## Notes
 
-- Selected values are stored in a hidden input.
-- Multiple mode serializes values with `|`.
-- The global `selectInstance` map stores instances by container element.
-
+- Значение берется из `value` option-кнопки.
+- В multiple режиме hidden input получает список выбранных значений.
+- `selectInstance` - alias для старого `selectInstace`.

@@ -1,71 +1,96 @@
-# Import Map
+# Карта импортов
 
 ## Root
+
+Корневой entrypoint экспортирует основные компоненты и helpers:
 
 ```js
 import {
   Switcher,
   AdditionalToggle,
+  ModalManager,
   InfiniteSlider,
   CustomSelect,
   ReadMore,
-  ModalManager,
+  disableScroll,
+  enableScroll,
 } from '@soinproduction/kit';
 ```
 
 ## Components
 
+Рекомендуемый формат для проектов:
+
 ```js
 import { Switcher } from '@soinproduction/kit/content-switcher';
-import { AdditionalToggle } from '@soinproduction/kit/drawers';
-import { InfiniteSlider } from '@soinproduction/kit/infinity-slider';
-import { CustomSelect } from '@soinproduction/kit/custom-select';
-import { ReadMore } from '@soinproduction/kit/read-more';
-import { ModalManager } from '@soinproduction/kit/modals';
-```
-
-Camel-case aliases are also exported:
-
-```js
 import { Switcher } from '@soinproduction/kit/contentSwitcher';
+
+import { AdditionalToggle } from '@soinproduction/kit/drawers';
+
+import { ModalManager } from '@soinproduction/kit/modals';
+
+import { InfiniteSlider } from '@soinproduction/kit/infinity-slider';
 import { InfiniteSlider } from '@soinproduction/kit/infinitySlider';
-import { CustomSelect } from '@soinproduction/kit/customSelect';
+
+import { CustomSelect, selectInstace, selectInstance } from '@soinproduction/kit/custom-select';
+import { CustomSelect, selectInstace, selectInstance } from '@soinproduction/kit/customSelect';
+
+import { ReadMore } from '@soinproduction/kit/read-more';
 import { ReadMore } from '@soinproduction/kit/readMore';
 ```
+
+`selectInstace` оставлен как существующий export. `selectInstance` добавлен как более читаемый alias.
 
 ## Functions
 
 ```js
 import {
   getAjaxData,
-  fadeIn,
-  fadeOut,
   disableScroll,
   enableScroll,
   elementSize,
+  fadeIn,
+  fadeOut,
+  addMultiListener,
+  even,
+  addClassOnCondition,
+  removeClassOnCondition,
+  toggleClassOnCondition,
+  classToScroll,
+  stickyHeader,
+  scrollToSection,
+  initParallaxEffect,
+  animateInit,
+  scrollToElement,
 } from '@soinproduction/kit/functions';
 ```
 
-Direct function files:
+Можно импортировать отдельный файл:
 
 ```js
-import { getAjaxData } from '@soinproduction/kit/functions/ajax-get-data';
 import { disableScroll } from '@soinproduction/kit/functions/disable-scroll';
-import { enableScroll } from '@soinproduction/kit/functions/enable-scroll';
-import { elementSize } from '@soinproduction/kit/functions/element-size';
 ```
 
 ## Scripts
 
 ```js
-import { AnchorObserver, cf7Reinit, loaderInstanse } from '@soinproduction/kit/functions/scripts';
+import {
+  AnchorObserver,
+  cf7Reinit,
+  loaderInstanse,
+  SplitText,
+} from '@soinproduction/kit/functions/scripts';
 ```
 
 ## Demo Assets
 
+HTML/SCSS демо-файлы доступны через `src/*`:
+
 ```js
 import '@soinproduction/kit/src/custom-select/select.scss';
 ```
+
+Примеры:
 
 ```txt
 @soinproduction/kit/src/content-switcher/index.html
@@ -74,4 +99,3 @@ import '@soinproduction/kit/src/custom-select/select.scss';
 @soinproduction/kit/src/read-more-admin/index.html
 @soinproduction/kit/src/infinitySlider/slider.html
 ```
-

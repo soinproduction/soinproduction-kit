@@ -1,131 +1,139 @@
 # Switcher
 
-`Switcher` controls tabs and accordions. It supports click or hover triggers, multiple buttons/content blocks per id, transition-aware accordion lifecycle hooks, nested switchers, and max-width breakpoints.
+Импорт:
 
 ```js
 import { Switcher } from '@soinproduction/kit/content-switcher';
 ```
 
+`Switcher` управляет tabs/accordion интерфейсами. Он умеет работать по click или hover, поддерживает несколько кнопок и несколько content-блоков на один id, а lifecycle-хуки открытия/закрытия учитывают CSS transition по `max-height`.
+
 ## Markup
 
 ```html
-<div data-tabs>
-  <button type="button" data-tab="overview">Overview</button>
-  <button type="button" data-tab="overview">Overview duplicate trigger</button>
-  <button type="button" data-tab="specs">Specs</button>
+<div data-switcher>
+  <button data-switcher-button="one">One</button>
+  <button data-switcher-button="two">Two</button>
 
-  <section data-tab-content="overview">Overview block A</section>
-  <section data-tab-content="overview">Overview block B</section>
-  <section data-tab-content="specs">Specs</section>
+  <div data-switcher-content="one">Content one</div>
+  <div data-switcher-content="two">Content two</div>
 </div>
 ```
 
-## Basic Usage
+## Базовое использование
 
 ```js
-new Switcher('[data-tabs]', {
+new Switcher('[data-switcher]', {
   mode: 'tabs',
-  attrNav: 'data-tab',
-  attrContent: 'data-tab-content',
+  attrNav: 'data-switcher-button',
+  attrContent: 'data-switcher-content',
 });
 ```
 
-## Accordion With Lifecycle
+## Accordion с lifecycle
 
 ```js
 new Switcher('[data-accordion]', {
   mode: 'accordion',
-  single: true,
   triggerEvent: 'click',
-  resetMaxHeightAfterOpen: true,
 
-  beforeOpen(id, ctx) {},
-  onOpen(id, ctx) {},
-  afterOpen(id, ctx) {},
-  onClose(id, ctx) {},
-  afterClose(id, ctx) {},
+  beforeOpen(id, ctx) {
+    // Перед закрытием других items и перед открытием текущего.
+  },
+
+  onOpen(id, ctx) {
+    // active уже поставлен, maxHeight уже задан.
+  },
+
+  afterOpen(id, ctx) {
+    // max-height transition открытия завершился.
+  },
+
+  onClose(id, ctx) {
+    // Закрытие стартовало.
+  },
+
+  afterClose(id, ctx) {
+    // max-height transition закрытия завершился.
+  },
 });
 ```
-
-For accordion mode, `afterOpen` and `afterClose` wait for the `max-height` transition. If there is no transition, hooks run immediately through the fallback path.
 
 ## Options
 
-| Option | Default | Description |
+| Option | Default | Описание |
 | --- | --- | --- |
-| `mode` | `'tabs'` | `'tabs'` or `'accordion'`. |
-| `single` | `false` | Accordion: close siblings before opening the next item. |
-| `breakpoint` | `null` | Legacy single-mode breakpoint for accordion behavior. |
-| `default` | `null` | Id to open on init. Can also be set with `data-default`. |
-| `activeClass` | `'active'` | Class applied to triggers, content, and nearest `*item*` wrapper. |
-| `attrNav` | `'data-id'` | Trigger attribute. |
-| `attrContent` | `'data-content'` | Content attribute. |
-| `triggerEvent` | `'click'` | `'click'` or `'hover'`. Hover also binds focus and click fallback. |
-| `responsive` | `null` | Legacy `{ breakpoint, mode }`; still supported. |
-| `breakpoints` | `null` | Max-width override map. |
-| `autoInitNested` | `true` | Auto-init nested `.tabs-wrapper` and `.accordion`. |
-| `resetMaxHeightAfterOpen` | `false` | Set `maxHeight = 'initial'` after `afterOpen`. |
-| `showInfo` | `false` | Log debug info. |
+| `mode` | `'tabs'` | `'tabs'` или `'accordion'`. |
+| `attrNav` | `'data-switcher-button'` | Атрибут trigger-кнопок. |
+| `attrContent` | `'data-switcher-content'` | Атрибут content-блоков. |
+| `activeClass` | `'active'` | Класс активного trigger/content. |
+| `single` | `true` | Для accordion закрывает остальные items перед открытием текущего. |
+| `triggerEvent` | `'click'` | `'click'` или `'hover'`. |
+| `hoverDelay` | `0` | Задержка hover-открытия. |
+| `resetMaxHeightAfterOpen` | `false` | После `afterOpen` ставит `content.style.maxHeight = 'initial'`. |
+| `breakpoints` | `{}` | Переопределение любых options по ширине. |
+| `responsive` | `{}` | Legacy alias для `breakpoints`. |
+| `beforeOpen` | `null` | Хук перед открытием. |
+| `onOpen` | `null` | Хук сразу после active/maxHeight. |
+| `afterOpen` | `null` | Хук после transition открытия. |
+| `onClose` | `null` | Хук после старта закрытия. |
+| `afterClose` | `null` | Хук после transition закрытия. |
 
 ## Breakpoints
 
-`Switcher` breakpoints use max-width semantics. The first matching breakpoint is applied.
+`Switcher` использует max-width breakpoints. Ключ применяется, когда `window.innerWidth <= breakpoint`.
 
 ```js
-new Switcher('[data-accordion]', {
-  mode: 'accordion',
-  single: true,
+new Switcher('[data-switcher]', {
   triggerEvent: 'hover',
-
+  single: true,
   breakpoints: {
     640: {
       single: false,
       triggerEvent: 'click',
     },
-    768: {
-      single: true,
-      resetMaxHeightAfterOpen: false,
-    },
     1024: {
-      mode: 'tabs',
-      activeClass: 'is-active',
+      triggerEvent: 'click',
     },
   },
 });
 ```
 
+Любая option может быть переопределена внутри breakpoint.
+
 ## Hook Context
 
-Hooks receive:
+В хуки приходит `ctx`:
 
 ```js
 {
+  parent,
+  buttons,
+  contents,
   btn,
   button,
   content,
-  buttons,
-  contents,
-  parent,
-  event,
+  event
 }
 ```
 
-`btn` and `content` are the first matched elements for backward compatibility. Use `buttons` and `contents` when multiple elements share the same id.
+`buttons` и `contents` всегда массивы для текущего id. `btn` и `button` указывают на trigger, который вызвал действие. `content` содержит первый content-блок для текущего id, если он есть. `event` передается при пользовательском действии.
 
-## Methods
+## Методы
 
 ```js
-const switcher = new Switcher('[data-tabs]');
+const switcher = new Switcher('[data-switcher]');
 
-switcher.open('overview');
-switcher.close('overview');
-switcher.toggle('overview');
-switcher.reinit();
+switcher.open('one');
+switcher.close('one');
+switcher.toggle('one');
 switcher.destroy();
 ```
 
 ## Notes
 
-- For hover accordions, clicking an already-open trigger does not close it by default; hover owns the open state.
-- If `resetMaxHeightAfterOpen` is enabled, close animation still works: the component restores pixel `max-height` before collapsing.
-
+- `afterOpen` и `afterClose` ждут именно transition по `max-height`.
+- Если transition отсутствует, hooks вызываются сразу.
+- Если `transitionend` не пришел, сработает fallback timeout.
+- `transition-property: all` считается подходящим transition.
+- Несколько trigger/content с одинаковым id синхронизируются вместе.
