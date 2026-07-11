@@ -1,55 +1,62 @@
 # ReadMore
 
-`ReadMore` toggles expandable content using `max-height` and button label changes.
+Импорт:
 
 ```js
 import { ReadMore } from '@soinproduction/kit/read-more';
 ```
 
+`ReadMore` управляет раскрытием/схлопыванием контента через height-анимацию. Подходит для текстовых блоков, FAQ и admin/frontend preview.
+
 ## Markup
 
 ```html
-<div class="read-more-content">
-  Hidden content
+<div data-read-more>
+  <div data-read-more-content>
+    Long content...
+  </div>
+  <button type="button" data-read-more-button>
+    Read more
+  </button>
 </div>
-<button data-read-more data-more-text="Read more" data-less-text="Hide">
-  <span class="read-more-text">Read more</span>
-</button>
 ```
 
-With explicit target:
+Можно использовать несколько кнопок:
 
 ```html
-<div id="bio" class="read-more-content">Bio content</div>
-<button data-read-more data-target="#bio">Read more</button>
+<button data-read-more-button>Open</button>
+<button data-read-more-button>Close</button>
 ```
 
-## Usage
+## Использование
 
 ```js
-const readMore = new ReadMore({
-  buttons: '[data-read-more]',
-  contentClass: 'read-more-content',
+const readMore = new ReadMore('[data-read-more]', {
   animationDuration: 300,
+  setAria: true,
 });
 ```
 
 ## Options
 
-| Option | Default | Description |
+| Option | Default | Описание |
 | --- | --- | --- |
-| `buttons` | `'[data-read-more]'` | Selector, NodeList, or array of buttons. |
-| `contentClass` | `'read-more-content'` | Previous sibling class used when `data-target` is absent. |
-| `animationDuration` | `300` | Timeout before setting `max-height: none`. |
-| `setAria` | `true` | Set role, aria-expanded, aria-controls. |
-| `autoHeightOptimization` | `true` | Set `max-height: none` after expand. |
-| `autoInit` | `true` | Initialize in constructor. |
+| `buttons` | `'[data-read-more-button]'` | Selector кнопок. |
+| `contentClass` | `'[data-read-more-content]'` | Selector content-блока. |
+| `animationDuration` | `300` | Длительность анимации. |
+| `setAria` | `true` | Ставить aria-expanded/hidden. |
+| `autoHeightOptimization` | `true` | Оптимизация высоты после раскрытия. |
+| `autoInit` | `true` | Инициализировать сразу в constructor. |
 
-## Methods
+## Методы
 
 ```js
 readMore.init();
-readMore.toggle(button, content);
+readMore.toggle();
 readMore.destroy();
 ```
 
+## Notes
+
+- После раскрытия может использоваться auto height, чтобы динамический контент не был зажат старой высотой.
+- Если `autoInit: false`, вызови `init()` вручную.

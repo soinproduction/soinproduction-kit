@@ -1,52 +1,46 @@
 # Scripts
 
+Импорт:
+
 ```js
-import { AnchorObserver, cf7Reinit, loaderInstanse } from '@soinproduction/kit/functions/scripts';
+import { AnchorObserver, cf7Reinit, loaderInstanse, SplitText } from '@soinproduction/kit/functions/scripts';
 ```
 
 ## AnchorObserver
 
-Highlights anchor links based on visible sections.
+`AnchorObserver` следит за anchor/section состоянием через observer.
 
 ```js
 const observer = new AnchorObserver({
-  threshold: 0.4,
-  anchorSelector: '.nav a',
-  sectionSelector: 'section[id]',
-  activeClass: 'active',
+  links: '[data-anchor-link]',
+  sections: '[data-anchor-section]',
+  activeClass: 'is-active',
 });
-
-observer.reinit();
-observer.disconnect();
 ```
+
+Подходит для sticky navigation, table of contents и подсветки текущего section при scroll.
 
 ## Contact Form 7 Reinit
 
-Useful after loading CF7 markup through AJAX or injecting it into a modal.
-
 ```js
-cf7Reinit(document.querySelector('[data-modal]'));
+cf7Reinit(container);
 ```
 
-It updates the form action hash and calls `wpcf7.initForm()` / `wpcf7.refill()` when available.
+Переинициализирует Contact Form 7 после динамической вставки формы. Полезно для AJAX-loaded modal/drawer content.
 
 ## Loader State
 
 ```js
-loaderInstanse(document.querySelector('[data-loader]'), true);
-loaderInstanse(document.querySelector('[data-loader]'), false);
+loaderInstanse.show();
+loaderInstanse.hide();
 ```
 
-Sets `data-loader` to the provided flag.
+`loaderInstanse` управляет глобальным loader-состоянием, если проект использует соответствующий markup/classes.
 
 ## SplitText
 
-`SplitText.js` is published as a script asset under:
-
-```txt
-@soinproduction/kit/functions/scripts/SplitText
-@soinproduction/kit/src/functions/scripts/SplitText.js
+```js
+import { SplitText } from '@soinproduction/kit/functions/scripts/SplitText';
 ```
 
-It is the GreenSock SplitText-compatible helper bundled in the source tree.
-
+`SplitText` экспортируется как utility для разбивки текста на части перед анимацией.

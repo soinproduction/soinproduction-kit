@@ -1,40 +1,45 @@
 # Helpers
 
+Импорт:
+
 ```js
 import {
   getAjaxData,
+  disableScroll,
+  enableScroll,
+  elementSize,
   fadeIn,
   fadeOut,
   addMultiListener,
   even,
-  addCustomClass,
-  removeCustomClass,
-  toggleCustomClass,
-  addClassInArray,
-  removeClassInArray,
-  toggleClassInArray,
+  addClassOnCondition,
+  removeClassOnCondition,
+  toggleClassOnCondition,
+  classToScroll,
   stickyHeader,
   scrollToSection,
   initParallaxEffect,
   animateInit,
   scrollToElement,
-  disableScroll,
-  enableScroll,
-  elementSize,
 } from '@soinproduction/kit/functions';
+```
+
+Можно импортировать отдельный helper:
+
+```js
+import { disableScroll } from '@soinproduction/kit/functions/disable-scroll';
 ```
 
 ## AJAX
 
 ```js
-getAjaxData(window.ajaxurl, 'load_posts', { page: 2 }, (response) => {
-  console.log(response);
-}, (error) => {
-  console.error(error);
+const data = await getAjaxData('/wp-json/my-route/v1/items', {
+  method: 'POST',
+  body: JSON.stringify({ id: 1 }),
 });
 ```
 
-`getAjaxData(url, action, params, callback, onError)` sends `application/x-www-form-urlencoded` POST data and parses JSON.
+`getAjaxData` - небольшой wrapper для `fetch`, который возвращает распарсенный JSON.
 
 ## Scroll Lock
 
@@ -43,58 +48,61 @@ disableScroll();
 enableScroll();
 ```
 
-`disableScroll()`:
-
-- adds `body.dis-scroll`;
-- preserves scroll position in `body.dataset.position`;
-- compensates scrollbar width on `body` and `.fixed-block`;
-- disables smooth scroll while locked.
-
-`enableScroll()` restores everything and scrolls back.
+Используется в drawers/modals и может применяться отдельно. Обычно нужен для открытых меню, drawer, modal и fullscreen overlays.
 
 ## CSS Variable From Element Size
 
 ```js
-elementSize(document.querySelector('[data-header]'), 'header-height', 'height');
+elementSize('[data-header]', '--header-height', 'height');
 ```
 
-Creates/updates:
+Helper измеряет элемент и записывает значение в CSS custom property.
+
+Пример CSS:
 
 ```css
 :root {
-  --header-height: 96px;
+  --header-height: 0px;
+}
+
+.page {
+  padding-top: var(--header-height);
 }
 ```
 
 ## Class Helpers
 
 ```js
-addCustomClass(el, 'active, visible');
-removeCustomClass(el, 'active');
-toggleCustomClass(el, 'active');
-
-addClassInArray(items, 'active');
-removeClassInArray(items, 'active');
-toggleClassInArray(items, 'active');
+addClassOnCondition(element, 'is-active', condition);
+removeClassOnCondition(element, 'is-hidden', condition);
+toggleClassOnCondition(element, 'is-open', condition);
 ```
 
-## Animation and Scroll Helpers
+`classToScroll` и `stickyHeader` помогают менять классы при scroll:
 
 ```js
-fadeIn(panel, 300, 'flex');
-fadeOut(panel, 300);
+classToScroll(document.body, 'is-scrolled', 20);
+stickyHeader('[data-header]', 'is-sticky');
+```
 
-stickyHeader(header, 250, 80, 'ease', 0, 40);
-scrollToSection('[data-section]', () => {});
+## Animation и Scroll Helpers
+
+```js
+fadeIn(element, 300);
+fadeOut(element, 300);
+
+scrollToSection('[data-section]');
+scrollToElement(document.querySelector('#target'));
+
 initParallaxEffect('[data-parallax]');
-animateInit(items, 'is-active', 1200);
-scrollToElement(element, 'down');
+animateInit('[data-animate]');
 ```
 
 ## Small Utilities
 
 ```js
-even(2); // true
-addMultiListener(window, 'resize orientationchange', () => {});
+addMultiListener(element, 'click touchstart', handler);
+even(4); // true
 ```
 
+`addMultiListener` вешает один handler на несколько событий. `even` проверяет четность числа.

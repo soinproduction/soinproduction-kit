@@ -1,31 +1,36 @@
 # AdditionalToggle
 
-`AdditionalToggle` controls drawers, menus, dropdowns, offcanvas panels, and any target toggled by one or more triggers. It supports click and hover, overlay state, scroll lock, transition-aware hooks, promises, groups, breakpoints, and accessibility.
+Импорт:
 
 ```js
 import { AdditionalToggle } from '@soinproduction/kit/drawers';
 ```
+
+`AdditionalToggle` управляет drawer, dropdown, меню и другими toggle-поверхностями. Компонент поддерживает click/hover/both, overlay, scroll lock, transition-aware lifecycle, promises, группы, accessibility и mobile-first breakpoints.
 
 ## Basic Drawer
 
 ```html
 <button data-menu-toggle>Menu</button>
 <div data-overlay></div>
-<nav data-menu>
+<aside data-menu>
   <button data-menu-close>Close</button>
-</nav>
+</aside>
 ```
 
 ```js
-const toggle = new AdditionalToggle({
+const menu = new AdditionalToggle({
   overlay: '[data-overlay]',
   items: [
     {
       trigger: '[data-menu-toggle]',
       close: '[data-menu-toggle], [data-menu-close]',
       target: '[data-menu]',
+      activeClass: 'is-active',
+      targetClass: 'is-open',
       scroll: true,
       waitTransition: true,
+      transitionTarget: 'target',
       transitionProperty: 'transform',
     },
   ],
@@ -38,13 +43,13 @@ const toggle = new AdditionalToggle({
 new AdditionalToggle({
   items: [
     {
-      trigger: '[data-nav-trigger]',
-      target: '[data-nav-dropdown]',
+      trigger: '[data-dropdown-trigger]',
+      target: '[data-dropdown]',
       triggerEvent: 'hover',
+      hoverOpenDelay: 80,
       hoverCloseDelay: 160,
-      hoverInteractiveTarget: true,
-      waitTransition: true,
-      transitionProperty: 'opacity',
+      closeOnLeave: true,
+      interactiveTarget: true,
     },
   ],
 });
@@ -52,92 +57,92 @@ new AdditionalToggle({
 
 ## Options
 
-Global options can be passed to the constructor. Item options override them.
+Глобальные options можно задавать в корне конструктора. Item-level options переопределяют глобальные.
 
-| Option | Default | Description |
+| Option | Default | Описание |
 | --- | --- | --- |
-| `overlay` | constructor: `null`, item: `true` | Overlay selector/element globally; item controls whether it uses overlay state. |
-| `activeClass` | `'active'` | Class for triggers and overlay. |
-| `targetActiveClass` | `activeClass` | Class for target elements. |
-| `overlayExtraClass` | `''` | Extra overlay class while this item is open. |
-| `trigger` | required | Selector/element/list of trigger buttons. |
-| `target` | required | Selector/element/list of controlled targets. |
-| `close` | `undefined` | Selector/element/list of close buttons. Can include trigger. |
-| `scroll` | `false` | Lock body scroll while open. |
-| `clickOnOverlay` | `true` | Close on outside/overlay click. |
-| `single` | `true` | Close other open items before opening. |
-| `group` | `null` | If set, `single` closes only items in the same group. |
-| `toggleOnTrigger` | `true` | Trigger can toggle the target. |
-| `closeOnTrigger` | `true` | Open trigger click can close the target. |
-| `triggerEvent` | `'click'` | `'click'`, `'hover'`, or `'both'`. |
-| `hoverOpenDelay` | `0` | Delay before hover open. |
-| `hoverCloseDelay` | `120` | Delay before hover close. |
-| `hoverSafeArea` | `true` | Do not close when moving between trigger and target. |
-| `hoverInteractiveTarget` | `true` | Target itself keeps hover dropdown open. |
-| `clickFallback` | `true` | Click also works in hover mode. |
-| `enabled` | `true` | Boolean or function returning whether item is active. |
-| `closeOnLeave` | `true` | Close if breakpoint disables an open item. |
-| `autoA11y` | `true` | Manage ARIA state. |
-| `focusOnOpen` | `false` | Selector/element/function to focus after open. |
-| `returnFocusOnClose` | `true` | Return focus to last trigger. |
+| `items` | `[]` | Массив toggle items. |
+| `overlay` | `null` | Selector/element overlay. |
+| `activeClass` | `'active'` | Класс trigger. |
+| `targetClass` | `'active'` | Класс target. |
+| `overlayExtraClass` | `'active'` | Класс overlay. |
+| `triggerEvent` | `'click'` | `'click'`, `'hover'` или `'both'`. |
+| `close` | `undefined` | Selector/element/list close-кнопок. Может включать trigger. |
+| `scroll` | `false` | Блокировать body scroll при открытии. |
+| `single` | `false` | Внутри группы открытым остается один item. |
+| `group` | `'default'` | Имя группы для `single`. |
+| `enabled` | `true` | Можно выключить item через breakpoint. |
+| `closeOnOutsideClick` | `true` | Закрывать по клику вне target. |
+| `closeOnEscape` | `true` | Закрывать по Escape. |
+| `closeOnLeave` | `false` | Закрывать при уходе мыши с hover-зоны. |
+| `interactiveTarget` | `true` | Hover target остается интерактивным и удерживает открытое состояние. |
+| `hoverOpenDelay` | `0` | Задержка открытия hover. |
+| `hoverCloseDelay` | `120` | Задержка закрытия hover. |
+| `hoverSafeArea` | `0` | Дополнительная область вокруг trigger/target. |
+| `waitTransition` | `false` | Ждать transition/animation перед after hooks. |
+| `transitionTarget` | `'target'` | `'target'`, `'overlay'` или element/function. |
+| `transitionProperty` | `'all'` | CSS property, которую нужно ждать. |
+| `transitionEvent` | `'transitionend'` | `'transitionend'` или `'animationend'`. |
+| `transitionTimeout` | `null` | Ручной fallback timeout. |
+| `waitAllTransitions` | `false` | Ждать самый длинный transition из списка. |
+| `resetTransitionStyles` | `false` | Сбрасывать inline transition styles после lifecycle. |
+| `autoA11y` | `true` | Автоматически ставить aria-expanded/hidden. |
+| `focusOnOpen` | `null` | Selector/element/function для фокуса после открытия. |
+| `returnFocusOnClose` | `true` | Возвращать фокус на trigger после закрытия. |
+| `breakpoints` | `{}` | Mobile-first overrides. |
 
 ## Transition Lifecycle
 
+Если `waitTransition: true`, методы возвращают Promise, который завершится после transition/animation.
+
+```js
+await menu.open(0);
+await menu.close(0);
+await menu.toggle(0);
+```
+
+Hook order:
+
+```txt
+beforeOpen -> item.beforeOpen -> onOpen -> item.onOpen -> afterOpen -> item.afterOpen
+beforeClose -> item.beforeClose -> onClose -> item.onClose -> afterClose -> item.afterClose
+```
+
+`afterOpen` и `afterClose` вызываются после ожидаемого transition/animation. Если transition отсутствует, Promise завершается сразу. Если browser не отправил event, используется fallback timeout.
+
+## Hooks
+
 ```js
 new AdditionalToggle({
-  waitTransition: true,
-  transitionTarget: 'targets',
-  transitionProperty: 'transform',
-  transitionEvent: 'auto',
-  transitionTimeout: 'auto',
-  waitAllTransitions: false,
+  beforeOpen(ctx) {},
+  onOpen(ctx) {},
+  afterOpen(ctx) {},
+  beforeClose(ctx) {},
+  onClose(ctx) {},
+  afterClose(ctx) {},
+  onToggle(ctx) {},
   items: [
     {
-      trigger: '[data-toggle]',
-      target: '[data-panel]',
+      trigger: '[data-menu-toggle]',
+      target: '[data-menu]',
       afterOpen(ctx) {},
-      afterClose(ctx) {},
     },
   ],
 });
 ```
 
-Transition options:
-
-| Option | Default | Description |
-| --- | --- | --- |
-| `waitTransition` | `false` | If true, `afterOpen/afterClose` wait for transition/animation. |
-| `transitionTarget` | `'targets'` | `'targets'`, `'overlay'`, selector, element, element list, or function. |
-| `transitionProperty` | `'auto'` | Property name, array, or `'auto'`. |
-| `transitionEvent` | `'transitionend'` | `'transitionend'`, `'animationend'`, or `'auto'`. |
-| `transitionTimeout` | `'auto'` | Number or computed duration + delay + 50ms. |
-| `waitAllTransitions` | `false` | Wait all meaningful targets instead of first one. |
-| `resetTransitionStyles` | `false` | Clear inline transition/animation after lifecycle wait. |
-
-## Hooks
-
-Order:
-
-1. global `beforeOpen`
-2. item `beforeOpen`
-3. item `afterOpen`
-4. global `afterOpen`
-5. global `beforeClose`
-6. item `beforeClose`
-7. item `afterClose`
-8. global `afterClose`
-
-Returning `false` from `beforeOpen` or `beforeClose` cancels the action.
-
-Hook context:
+`ctx` содержит:
 
 ```js
 {
   instance,
+  item,
+  index,
   action,
   phase,
   event,
   trigger,
+  target,
   close,
   overlay,
   triggers,
@@ -150,26 +155,26 @@ Hook context:
   isOpen,
   previousState,
   nextState,
-  options,
+  options
 }
 ```
 
 ## Breakpoints
 
-Breakpoints are mobile-first and cascade. Base options are applied first, then all keys where `window.innerWidth >= breakpoint`.
+`AdditionalToggle` использует mobile-first breakpoints. Ключ применяется, когда `window.innerWidth >= breakpoint`, а настройки каскадно мержатся поверх базовых.
 
 ```js
 new AdditionalToggle({
   items: [
     {
-      trigger: '[data-mobile-menu-toggle]',
-      target: '[data-mobile-menu]',
-      scroll: true,
-      enabled: true,
+      trigger: '[data-nav-trigger]',
+      target: '[data-nav]',
+      triggerEvent: 'click',
       breakpoints: {
         1024: {
-          enabled: false,
+          triggerEvent: 'hover',
           closeOnLeave: true,
+          scroll: false,
         },
       },
     },
@@ -177,21 +182,20 @@ new AdditionalToggle({
 });
 ```
 
-## Methods
-
-All methods return `Promise<boolean>`.
+## Методы
 
 ```js
-await toggle.open(ref, { event, trigger });
-await toggle.close(ref, { event, trigger, close });
-await toggle.toggle(ref, { event, trigger });
-await toggle.closeAll({ force: true, group: 'nav' });
+const toggle = new AdditionalToggle(options);
 
-toggle.getInstance(ref);
-toggle.isOpen(ref);
-toggle.reinit();
+await toggle.open(0, event);
+await toggle.close(0, event);
+await toggle.toggle(0, event);
+await toggle.closeAll(event);
+
+toggle.isOpen(0);
+toggle.getInstance(0);
 toggle.destroy();
+toggle.reinit();
 ```
 
-`ref` can be an item index, target selector, target element, trigger element, or the instance object.
-
+`open`, `close`, `toggle` и `closeAll` возвращают `Promise<boolean>`.

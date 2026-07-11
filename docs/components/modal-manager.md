@@ -1,32 +1,33 @@
 # ModalManager
 
-`ModalManager` controls modals inside an overlay. It supports old JS fade behavior and CSS-class animation, transition-aware lifecycle hooks, focus management, ARIA, hash/history integration, operation strategies, and per-modal config.
+Импорт:
 
 ```js
 import { ModalManager } from '@soinproduction/kit/modals';
 ```
 
+`ModalManager` управляет модальными окнами. Он поддерживает JS fade или CSS-class анимацию, transition-aware lifecycle, переключение между модалками, focus management, history/hash и настройки для конкретных modal id.
+
 ## Markup
 
 ```html
-<button data-btn-modal="search">Open search</button>
+<button data-modal-target="contact">Open contact</button>
 
-<div data-overlay aria-hidden="true">
-  <section data-popup="search" id="search-modal">
+<div data-modal="contact">
+  <div data-modal-inner>
     <button data-modal-close>Close</button>
-    <input type="search" />
-  </section>
+    Contact form
+  </div>
 </div>
 ```
 
-## Basic Usage
+## Базовое использование
 
 ```js
 const modals = new ModalManager({
-  overlay: '[data-overlay]',
-  modalSelector: '[data-popup]',
-  triggerSelector: '[data-btn-modal], a[href^="#"]',
-  closeSelector: '[data-modal-close], .close',
+  modalSelector: '[data-modal]',
+  triggerSelector: '[data-modal-target]',
+  closeSelector: '[data-modal-close]',
 });
 ```
 
@@ -38,20 +39,22 @@ new ModalManager({
   waitTransition: true,
   transitionTarget: 'modal',
   transitionProperty: 'opacity',
-  transitionEvent: 'auto',
+  modalOpeningClass: 'is-opening',
+  modalClosingClass: 'is-closing',
+  activeClass: 'is-active',
 });
 ```
 
-In `css-class` mode, the manager adds/removes classes only. CSS owns layout, opacity, transform, and animation.
+Пример CSS:
 
 ```css
-[data-popup] {
+[data-modal] {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 220ms ease;
+  transition: opacity 0.25s ease;
 }
 
-[data-popup].active {
+[data-modal].is-active {
   opacity: 1;
   pointer-events: auto;
 }
@@ -59,89 +62,80 @@ In `css-class` mode, the manager adds/removes classes only. CSS owns layout, opa
 
 ## Options
 
-| Option | Default | Description |
+| Option | Default | Описание |
 | --- | --- | --- |
-| `overlay` | `'[data-overlay]'` | Overlay selector or element. |
-| `modalSelector` | `'[data-popup]'` | Modal selector inside overlay. |
-| `triggerSelector` | `'[data-btn-modal], a[href^="#"]'` | Trigger selector. |
-| `closeSelector` | `'[data-modal-close], .close'` | Close button selector, resolved with `closest()`. |
-| `innerSelector` | `'[data-btn-inner]'` | Button for switching between modals. |
-| `activeClass` | `'active'` | Active class for overlay/modal. |
-| `activeMode` | `''` | Extra overlay class while any modal is open. |
-| `animationMode` | `'js-fade'` | `'js-fade'` or `'css-class'`. |
-| `fadeInTimeout` | `300` | JS fade duration or fallback wait. |
-| `fadeOutTimeout` | `300` | JS fade duration or fallback wait. |
-| `closeOnEsc` | `true` | Escape closes current modal. |
-| `closeOnOverlayClick` | `true` | Overlay click closes current modal. |
-| `focusOnOpen` | `'first'` | `'first'`, selector, element, or `false`. |
-| `returnFocusOnClose` | `true` | Return focus to the opening trigger. |
-| `trapFocus` | `true` | Cycle Tab/Shift+Tab inside current modal. |
-| `inertBackground` | `false` | Set `inert` on body children except overlay. |
-| `autoA11y` | `true` | Manage dialog role, aria-hidden, aria-expanded, aria-controls. |
-| `history` | `true` | Enable History API updates. |
-| `hash` | `true` | Use hash in URL. |
-| `hashMode` | `'push'` | `'push'` or `'replace'`. |
-| `closeOnBack` | `true` | React to browser back/popstate. |
-| `openOnHashLoad` | `true` | Open matching modal on page load. |
-| `animationStrategy` | `'ignore'` | `'ignore'`, `'queue'`, or `'interrupt'`. |
-| `queue` | `false` | Legacy shortcut: true sets strategy to `'queue'`. |
-| `bodyActiveClass` | `'modal-open'` | Body class while modal is open. |
-| `bodyModeClass` | `null` | String or function `(id) => className`. |
-| `modalOpeningClass` | `'is-opening'` | Class during open lifecycle. |
-| `modalClosingClass` | `'is-closing'` | Class during close lifecycle. |
+| `modalSelector` | `'[data-modal]'` | Selector модалок. |
+| `triggerSelector` | `'[data-modal-target]'` | Selector trigger-кнопок. |
+| `closeSelector` | `'[data-modal-close]'` | Selector close-кнопок. |
+| `innerSelector` | `'[data-modal-inner]'` | Selector внутреннего контейнера. |
+| `activeClass` | `'active'` | Класс открытой модалки. |
+| `bodyActiveClass` | `'modal-open'` | Класс body при открытой модалке. |
+| `bodyModeClass` | `null` | Дополнительный класс body. |
+| `modalOpeningClass` | `'is-opening'` | Класс во время открытия. |
+| `modalClosingClass` | `'is-closing'` | Класс во время закрытия. |
+| `animationMode` | `'js-fade'` | `'js-fade'` или `'css-class'`. |
+| `fadeInTimeout` | `300` | Длительность JS fade in. |
+| `fadeOutTimeout` | `300` | Длительность JS fade out. |
+| `waitTransition` | `false` | Ждать CSS transition/animation. |
+| `transitionTarget` | `'modal'` | `'modal'`, `'inner'`, `'overlay'` или element/function. |
+| `transitionProperty` | `'all'` | CSS property, которую нужно ждать. |
+| `transitionEvent` | `'transitionend'` | `'transitionend'` или `'animationend'`. |
+| `transitionTimeout` | `null` | Ручной fallback timeout. |
+| `animationStrategy` | `'interrupt'` | `'ignore'`, `'queue'` или `'interrupt'`. |
+| `queue` | `false` | Shortcut для `animationStrategy: 'queue'`. |
+| `closeOnEsc` | `true` | Закрывать по Escape. |
+| `closeOnOverlayClick` | `true` | Закрывать по клику вне inner. |
+| `scrollLock` | `true` | Блокировать body scroll. |
+| `focusOnOpen` | `null` | Selector/element/function для фокуса после открытия. |
+| `returnFocusOnClose` | `true` | Вернуть фокус на trigger. |
+| `trapFocus` | `true` | Удерживать Tab внутри модалки. |
+| `inertBackground` | `false` | Ставить inert на соседние элементы body. |
+| `autoA11y` | `true` | Автоматические role/aria атрибуты. |
+| `history` | `false` | Интеграция с browser history. |
+| `hash` | `false` | Открытие/закрытие через URL hash. |
+| `hashMode` | `'modal'` | Prefix hash-режима. |
+| `closeOnBack` | `true` | Закрывать по back при history/hash. |
+| `openOnHashLoad` | `true` | Открыть модалку из hash при загрузке. |
 | `modals` | `{}` | Per-modal config. |
 
 ## Transition Lifecycle
 
-```js
-new ModalManager({
-  waitTransition: true,
-  transitionTarget: 'modal',
-  transitionProperty: ['opacity', 'transform'],
-  transitionEvent: 'auto',
-  transitionTimeout: 'auto',
-});
-```
-
-| Option | Default | Description |
-| --- | --- | --- |
-| `waitTransition` | `false` | If true, lifecycle waits for transition/animation before after hooks. |
-| `transitionTarget` | `'modal'` | `'modal'`, `'overlay'`, selector, element, or function. |
-| `transitionProperty` | `'auto'` | Property name, array, or `'auto'`. |
-| `transitionEvent` | `'transitionend'` | `'transitionend'`, `'animationend'`, or `'auto'`. |
-| `transitionTimeout` | `'auto'` | Number or computed duration + delay + 50ms. |
-
-## Hooks and Events
-
-Global hooks:
-
-```js
-new ModalManager({
-  beforeOpen(ctx) {},
-  afterOpen(ctx) {},
-  beforeClose(ctx) {},
-  afterClose(ctx) {},
-});
-```
-
-Runtime hooks:
-
-```js
-modals.on('afterOpen', (ctx) => {});
-modals.once('afterClose', (ctx) => {});
-modals.off('afterOpen');
-```
-
-DOM events are dispatched from overlay:
+Хуки открытия:
 
 ```txt
-modal:beforeopen
-modal:afteropen
-modal:beforeclose
-modal:afterclose
+beforeOpen -> onOpen -> afterOpen
 ```
 
-Hook/event context:
+Хуки закрытия:
+
+```txt
+beforeClose -> onClose -> afterClose
+```
+
+При `animationMode: 'css-class'` и `waitTransition: true`:
+
+- `onOpen` вызывается после установки active/opening классов;
+- `afterOpen` вызывается после transition/animation;
+- `onClose` вызывается после старта закрытия;
+- `afterClose` вызывается после transition/animation закрытия.
+
+Если transition отсутствует, hook вызывается сразу. Если browser не отправил event, используется fallback timeout.
+
+## Hooks и Events
+
+```js
+new ModalManager({
+  beforeOpen(id, ctx) {},
+  onOpen(id, ctx) {},
+  afterOpen(id, ctx) {},
+  beforeClose(id, ctx) {},
+  onClose(id, ctx) {},
+  afterClose(id, ctx) {},
+  onSwitch(fromId, toId, ctx) {},
+});
+```
+
+`ctx` содержит:
 
 ```js
 {
@@ -151,66 +145,88 @@ Hook/event context:
   overlay,
   trigger,
   event,
-  action,       // open | close | switch
-  phase,        // beforeOpen | afterOpen | beforeClose | afterClose
+  action,
+  phase,
   previousModal,
   currentModal,
-  closeReason,  // button | overlay | escape | history | api | switch
-  options,
+  closeReason,
+  options
 }
+```
+
+Можно также слушать DOM events:
+
+```js
+document.addEventListener('modal:after-open', (event) => {
+  console.log(event.detail.id);
+});
+```
+
+Events:
+
+```txt
+modal:before-open
+modal:open
+modal:after-open
+modal:before-close
+modal:close
+modal:after-close
+modal:switch
 ```
 
 ## Per-Modal Config
 
 ```js
 new ModalManager({
+  animationMode: 'css-class',
   modals: {
-    search: {
-      focusOnOpen: 'input[type="search"]',
-      closeOnOverlayClick: true,
+    contact: {
+      focusOnOpen: '[name="email"]',
+      transitionProperty: 'transform',
     },
     video: {
+      scrollLock: false,
       closeOnOverlayClick: false,
-      afterClose({ modal }) {
-        // stop video
-      },
     },
   },
 });
 ```
 
-## Methods
+Per-modal options мержатся поверх глобальных options для выбранного id.
 
-All public open/close methods return `Promise<boolean>`.
+## Методы
 
 ```js
-await modals.open('search', { trigger, event });
-await modals.close('search', { closeReason: 'api' });
-await modals.close();
-await modals.closeAll({ force: true });
-await modals.toggle('search');
-await modals.switchTo('video');
+const manager = new ModalManager();
 
-modals.isOpen();
-modals.isOpen('search');
-modals.getCurrent();
-modals.getModal('search');
-modals.reinit();
-modals.destroy();
+await manager.open('contact', event);
+await manager.close('contact', event);
+await manager.closeAll(event);
+await manager.toggle('contact', event);
+await manager.switchTo('video', event);
+
+manager.isOpen('contact');
+manager.getCurrent();
+manager.getModal('contact');
+manager.destroy();
+manager.reinit();
 ```
 
-Backward-compatible aliases:
+Aliases:
 
 ```js
-await modals.openModal('search');
-await modals.closeAllModals();
+manager.openModal('contact', event);
+manager.closeAllModals(event);
 ```
 
 ## Operation Strategies
 
-| Strategy | Behavior |
-| --- | --- |
-| `ignore` | If animation is running, new action resolves `false`. |
-| `queue` | Queue the next action after the current lifecycle completes. |
-| `interrupt` | Invalidate the current operation token and start the next action. |
+`animationStrategy` управляет тем, что делать, если новая операция пришла во время анимации:
 
+| Strategy | Поведение |
+| --- | --- |
+| `interrupt` | Прерывает текущую операцию и запускает новую. |
+| `ignore` | Игнорирует новую операцию, пока идет текущая. |
+| `queue` | Ставит новую операцию в очередь. |
+
+`queue: true` включает `animationStrategy: 'queue'`.
