@@ -4,53 +4,86 @@
     window.additionalToggleInstance = new AdditionalToggle({
         overlay: '[data-overlay]',
         activeClass: 'active',
+        waitTransition: true,
+        transitionTarget: 'targets',
+        transitionEvent: 'auto',
 
         // Глобальные хуки До/После открытия
-        beforeOpen: (inst) => { /* общий препроцесс */ },
-        afterOpen:  (inst) => { /* общий постпроцесс */ },
-        beforeClose:(inst) => { /* общий препроцесс закрытия */ },
-        afterClose: (inst) => { /* общий постпроцесс закрытия */ },
+        beforeOpen: (ctx) => { /* общий препроцесс */ },
+        afterOpen:  (ctx) => { /* общий постпроцесс после transition */ },
+        beforeClose:(ctx) => { /* общий препроцесс закрытия */ },
+        afterClose: (ctx) => { /* общий постпроцесс после transition */ },
 
         items: [
             {
                 trigger: '', // тригер (можно указывать несколько: ".trigger, .trigger2")
                 target: '', // цель тригера
                 close: '', // сlose (можно указывать несколько: ".сlose, .сlose2")
+                triggerEvent: 'click', // 'click', 'hover' или 'both'
+                toggleOnTrigger: true, // тот же trigger может закрывать открытый target
+                closeOnTrigger: true,
+                single: true,
+                group: 'main-menu',
                 targetActiveClass: ' active', // доп класс активности для target
                 overlayExtraClass: 'overlay-mode', // доп класс активности для overlay
                 scroll: true,
                 overlay: true, // overlay включен - true по умолчанию
                 clickOnOverlay: true, // закрытие по клику на overlay - true по умолчанию
+                autoA11y: true,
+                focusOnOpen: false,
+                returnFocusOnClose: true,
+                hoverOpenDelay: 0,
+                hoverCloseDelay: 160,
+                hoverInteractiveTarget: true,
+                waitTransition: true,
+                transitionProperty: 'auto',
+                transitionTimeout: 'auto',
+                breakpoints: {
+                    640: {
+                        triggerEvent: 'click',
+                    },
+                    1024: {
+                        triggerEvent: 'hover',
+                        activeClass: 'is-active',
+                        enabled: true,
+                    }
+                },
 
                 // хуки для конкретного item До/После открытия
-                beforeOpen:  (inst) => {},
-                afterOpen:   (inst) => {},
-                beforeClose: (inst) => {},
-                afterClose:  (inst) => {}
+                beforeOpen:  (ctx) => {},
+                afterOpen:   (ctx) => {},
+                beforeClose: (ctx) => {},
+                afterClose:  (ctx) => {}
             },
         ]
     });
 
     // открыть первый item (по индексу в массиве items)
-    window.additionalToggleInstance.open(0);
+    await window.additionalToggleInstance.open(0);
 
     // закрыть первый item
-    window.additionalToggleInstance.close(0);
+    await window.additionalToggleInstance.close(0);
 
     // открыть по селектору target
-    window.additionalToggleInstance.open('.menu');
+    await window.additionalToggleInstance.open('.menu');
 
     // закрыть по селектору target
-    window.additionalToggleInstance.close('.menu');
+    await window.additionalToggleInstance.close('.menu');
 
     // открыть по самому DOM-элементу
     const searchPanel = document.querySelector('.search-panel');
-    window.additionalToggleInstance.open(searchPanel);
+    await window.additionalToggleInstance.open(searchPanel);
 
-    window.additionalToggleInstance.toggle('.menu');
+    await window.additionalToggleInstance.toggle('.menu');
 
     // закрыть всё
-    window.additionalToggleInstance.closeAll();
+    await window.additionalToggleInstance.closeAll();
+
+    // проверить состояние
+    window.additionalToggleInstance.isOpen('.menu');
+
+    // получить instance
+    window.additionalToggleInstance.getInstance('.menu');
 
 
 

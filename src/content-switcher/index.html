@@ -26,8 +26,25 @@
             activeClass: 'active',       // Класс активности, который применяется к кнопке, обёртке и контенту
             attrNav: 'data-id',          // Атрибут на кнопках (навигация)
             attrContent: 'data-content', // Атрибут на блоках контента
+            triggerEvent: 'click',       // 'click' или 'hover'
             single: true,                // Только для mode: 'accordion' — разрешает открытие только одного блока если не задан data-single
             breakpoint: 1024,            // Для single — ширина, до которой правило работает (если нужно) если не задан data-breakpoint
+            resetMaxHeightAfterOpen: true, // После открытия ставит max-height: initial
+            breakpoints: {
+                640: {
+                    single: false,
+                    triggerEvent: 'click',
+                },
+                768: {
+                    single: true,
+                    triggerEvent: 'click',
+                    resetMaxHeightAfterOpen: false,
+                },
+                1024: {
+                    single: true,
+                    triggerEvent: 'hover',
+                }
+            },
             responsive: {
                 breakpoint: 768,         // При <=768px переключает mode
                 mode: 'tabs'        // Будет использоваться 'accordion' вместо 'tabs'
@@ -45,6 +62,10 @@
                 console.log('✅ onOpen →', id, ctx);
             },
 
+            afterOpen: (id, ctx) => {
+                console.log('🏁 afterOpen →', id, ctx);
+            },
+
             onClose: (id, ctx) => {
                 console.log('❌ onClose →', id, ctx);
             },
@@ -53,6 +74,29 @@
                 console.log('🧹 afterClose →', id, ctx);
             }
 
+        });
+    });
+</script>
+
+<div class="tabs-wrapper" data-hover-tabs>
+    <button type="button" data-tab="team">Team nav #1</button>
+    <button type="button" data-tab="team">Team nav #2</button>
+    <button type="button" data-tab="careers">Careers</button>
+
+    <div data-tab-content="team">Team content #1</div>
+    <div data-tab-content="team">Team content #2</div>
+    <div data-tab-content="careers">Careers content</div>
+</div>
+
+<script>
+    import {Switcher} from "@soinproduction/kit";
+
+    document.addEventListener('DOMContentLoaded', () => {
+        new Switcher('[data-hover-tabs]', {
+            mode: 'tabs',
+            attrNav: 'data-tab',
+            attrContent: 'data-tab-content',
+            triggerEvent: 'hover',
         });
     });
 </script>
