@@ -113,3 +113,11 @@ import '@soinproduction/kit/src/custom-select/select.scss';
 `admin` содержит общие WordPress/ACF-стили. Модули `wyse` и
 `plugins/link-picker` расширяют дизайн-систему проекта и разрешают зависимости
 `mixins/*` и `general/*` через Sass load paths потребителя.
+
+Путь к шрифтам задаётся модулем проекта `general/fonts`. Если entrypoint
+собирается не в стандартный `assets/css`, настрой его до link-picker:
+
+```scss
+@use "general/fonts" with ($font-assets-path: "../fonts");
+@use "pkg:@soinproduction/kit/admin/plugins/link-picker";
+```

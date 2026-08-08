@@ -1,6 +1,4 @@
-@use "general/fonts" with (
-  $font-assets-path: "../../../../fonts"
-);
+@use "general/fonts";
 @use "general/vars";
 @use "general/buttons";
 
