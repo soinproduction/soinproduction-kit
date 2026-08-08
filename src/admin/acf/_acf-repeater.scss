@@ -1,0 +1,105 @@
+@for $i from 2 through 8 {
+  .col-#{$i} > .acf-input > .acf-repeater {
+    .acf-table {
+      tbody {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(#{$i}, 1fr);
+
+        tbody {
+          grid-template-columns: 100%;
+        }
+      }
+    }
+  }
+}
+
+@for $p from 2 through 5 {
+  .flex-#{$p} > .acf-input > .acf-repeater {
+    .acf-table {
+      tbody {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+
+        .acf-row {
+          max-width: calc(100% / (#{$p}));
+          flex-shrink: 1;
+          flex-grow: 1;
+          border: none;
+          display: grid;
+          grid-template-columns: auto 1fr auto;
+        }
+
+      }
+    }
+  }
+}
+
+[class*="flex-"],
+[class*="col-"] {
+  .acf-row {
+    margin: 0;
+  }
+
+  .acf-table {
+    tbody {
+      .acf-label {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 0 !important;
+        flex-grow: 1;
+        display: flex;
+
+        td:nth-of-type(2) {
+          flex-grow: 1;
+        }
+      }
+
+      .image-wrap {
+        max-width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .acf-field-image {
+
+        img {
+          margin: 0 auto;
+          //aspect-ratio: 1;
+          width: 100%;
+          object-fit: contain;
+        }
+      }
+    }
+  }
+}
+
+.acf-repeater .acf-row-handle.order {
+  background: var(--wp-admin-theme-color) !important;
+  color: #fff !important;
+  flex-shrink: 0;
+}
+
+.acf-repeater .acf-row-handle.remove {
+  background: #dc3232;
+  color: #fff;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.acf-repeater .acf-row-handle.remove:hover {
+  background: #aa0000;
+}
+
+.acf-repeater .acf-row {
+  border: 1px solid #ccd0d4;
+  margin-bottom: 15px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,16 @@
+.auto-height-editor {
+  min-height: initial !important;
+
+  iframe {
+    height: auto !important;
+  }
+}
+
+.mini-editor {
+  min-height: initial !important;
+
+  iframe {
+    height: auto !important;
+    min-height: 120px !important;
+  }
+}

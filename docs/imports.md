@@ -99,3 +99,17 @@ import '@soinproduction/kit/src/custom-select/select.scss';
 @soinproduction/kit/src/read-more-admin/index.html
 @soinproduction/kit/src/infinitySlider/slider.html
 ```
+
+## Admin SCSS
+
+Для Sass подключай admin-модули через package importer:
+
+```scss
+@use "pkg:@soinproduction/kit/admin";
+@use "pkg:@soinproduction/kit/admin/wyse/style";
+@use "pkg:@soinproduction/kit/admin/plugins/link-picker";
+```
+
+`admin` содержит общие WordPress/ACF-стили. Модули `wyse` и
+`plugins/link-picker` расширяют дизайн-систему проекта и разрешают зависимости
+`mixins/*` и `general/*` через Sass load paths потребителя.

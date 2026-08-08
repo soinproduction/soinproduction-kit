@@ -1,0 +1,242 @@
+@use "mixins/breakpoint" as *;
+@use "mixins/mini" as *;
+
+html {
+  &:has(#tinymce) {
+    font-size: var(--rem-func);
+    //font-size: 14px;
+    font-family: var(--font-family);
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.2;
+
+    * {
+      box-sizing: border-box !important;
+    }
+
+    body {
+      font-family: inherit;
+
+      * {
+        margin: 0;
+      }
+
+
+      &.mce-content-body {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+        background-color: #EDEFF7 !important; // Нейтральный светлый фон сайта
+      }
+    }
+
+    .wp-editor {
+      --cl-a: #0c0909;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+
+      @include headers {
+        margin: 0;
+      }
+
+      * {
+        font-family: var(--font-family) !important;
+      }
+
+      a {
+        --cl-a: #faf8f8;
+      }
+
+      p {
+        margin: 0;
+
+        &:empty,
+        &:has(> br:only-child),
+        &:has(> br[data-mce-bogus]:only-child) {
+          width: 100%;
+          min-height: 1.3em;
+        }
+
+        &:has(a[class]) {
+          a+a {
+            margin-left: 1.6rem;
+          }
+        }
+
+        &:has(.full-width) {
+          width: 100%;
+        }
+      }
+
+      hr {
+        display: flex;
+        height: 0.1rem;
+        width: 100%;
+      }
+
+      ul:not([class]),
+      ol:not([class]) {
+        display: flex;
+        flex-direction: column;
+        gap: 1.6rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        li {
+          position: relative;
+          padding-left: 3.2rem;
+          font-family: var(--font-family);
+          font-size: clamp(16px, 1.098vw, 1.8rem);
+          font-style: normal;
+          color: rgba(26, 37, 56, 0.70);
+          font-weight: 400;
+          line-height: 130%;
+          list-style: none;
+        }
+      }
+
+      ul:not([class]) {
+        > li:not(.item-sparkle):not(.item-check):not(.item-info):not(.item-cancel) {
+          &::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0.6em;
+            width: 0.8rem;
+            height: 0.8rem;
+            border-radius: 50%;
+            background-color: var(--cl-c);
+          }
+        }
+      }
+
+      ol:not([class]) {
+        counter-reset: sp-default-ordered-list;
+
+        > li {
+          counter-increment: sp-default-ordered-list;
+
+          &:not(.item-sparkle):not(.item-check):not(.item-info):not(.item-cancel)::before {
+            content: counter(sp-default-ordered-list) ".";
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: var(--cl-c);
+            font-size: inherit;
+            font-weight: 700;
+            line-height: inherit;
+          }
+        }
+      }
+
+      ul[class] {
+        padding: 0;
+      }
+
+      &>* {
+        &[style*="text-align: center;"] {
+          width: fit-content;
+          margin: 0 auto;
+
+          &:empty,
+          &:has(> br:only-child),
+          &:has(> br[data-mce-bogus]:only-child) {
+            width: 100%;
+            margin-right: 0;
+            margin-left: 0;
+          }
+
+          * {
+            text-align: initial !important;
+          }
+        }
+
+        &[style*="text-align: left;"] {
+          width: fit-content;
+          margin-right: auto;
+
+          &:empty,
+          &:has(> br:only-child),
+          &:has(> br[data-mce-bogus]:only-child) {
+            width: 100%;
+          }
+
+          * {
+            text-align: initial !important;
+          }
+        }
+
+        &[style*="text-align: right;"] {
+          width: fit-content;
+          margin-left: auto;
+
+          &:empty,
+          &:has(> br:only-child),
+          &:has(> br[data-mce-bogus]:only-child) {
+            width: 100%;
+          }
+
+          * {
+            text-align: initial !important;
+          }
+        }
+      }
+
+      *[data-toc-item="true"],
+      *[data-toc-item="parent"] {
+        position: relative;
+        outline: 0.15rem dashed #2ca9bc !important;
+        outline-offset: 0.4rem;
+        padding-right: 5rem !important;
+
+        &::after {
+          content: "TOC";
+          position: absolute;
+          top: 50%;
+          right: 1rem;
+          transform: translateY(-50%);
+          font-size: 1rem;
+          line-height: 1;
+          background-color: #2ca9bc;
+          color: #ffffff;
+          padding: 0.3rem 0.6rem;
+          border-radius: 0.4rem;
+          font-family: sans-serif;
+          font-weight: 700;
+          text-transform: uppercase;
+          pointer-events: none;
+          z-index: 10;
+        }
+      }
+
+      *[data-toc-item="child"] {
+        position: relative;
+        outline: 0.15rem dashed #f15d26 !important;
+        outline-offset: 0.4rem;
+        padding-right: 7.5rem !important;
+
+        &::after {
+          content: "TOC SUB";
+          position: absolute;
+          top: 50%;
+          right: 1rem;
+          transform: translateY(-50%);
+          font-size: 1rem;
+          line-height: 1;
+          background-color: #f15d26;
+          color: #ffffff;
+          padding: 0.3rem 0.6rem;
+          border-radius: 0.4rem;
+          font-family: sans-serif;
+          font-weight: 700;
+          text-transform: uppercase;
+          pointer-events: none;
+          z-index: 10;
+        }
+      }
+    }
+  }
+}
