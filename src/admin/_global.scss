@@ -1,0 +1,360 @@
+#acf-field_ui_assets_button_icons_box-field_ui_assets_button_icons_box_button_icons {
+  img {
+    width: 50%;
+  }
+}
+
+.thumbnail.thumbnail-image .details-image {
+  min-width: 50%;
+}
+
+.details-image[src*='.svg'] ~ .attachment-actions .edit-attachment {
+  display: none;
+}
+
+.initial-height {
+  min-height: initial !important;
+}
+
+.sp-menu-button {
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+  min-height: 38px !important;
+  display: inline-flex !important;
+  align-items: center;
+  font-weight: 600;
+}
+
+.media-icon img {
+  width: 100%;
+}
+
+.wp-core-ui .attachment .landscape img[src*=".svg"]:not(.icon) {
+  max-height: 100%;
+  width: 100%;
+  max-width: 50%;
+  height: auto;
+}
+
+#edittag {
+  max-width: 100% !important;
+
+  .description, h2 {
+    display: none;
+  }
+}
+
+// restyle required *
+[data-required="1"] {
+  position: relative;
+
+  .acf-label {
+    gap: 5px;
+    display: flex !important;
+
+    label {
+      margin: 0 !important;
+    }
+  }
+
+  .acf-required {
+    position: absolute;
+    font-size: 20px;
+    line-height: 100%;
+    top: 0;
+    right: 0;
+  }
+}
+
+
+
+@for $p from 2 through 12 {
+  .span-#{$p} {
+    grid-column: span #{$p};
+  }
+}
+
+.taxonomy-grid-3 {
+  .acf-taxonomy-field {
+    ul {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 5px !important;
+
+      li {
+        margin: 0 !important;
+
+        &:not(.select2-search) {
+          font-size: 22px;
+          font-weight: 700;
+          text-align: center;
+          position: relative;
+          min-height: 50px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .select2-selection__choice__remove {
+          position: absolute !important;
+          right: 5px;
+          top: 5px;
+          line-height: 10px;
+        }
+      }
+
+      .select2-search {
+        grid-column: 1 /-1;
+        border-bottom: 1px solid #ccc;
+      }
+    }
+  }
+}
+
+.acf-image-uploader .image-wrap.show-if-value .acf-actions {
+  z-index: 10 !important;
+}
+
+.hidden-label {
+    .acf-label {
+      display: none !important;
+    }
+}
+
+.acf-image-uploader {
+  .image-wrap {
+    display: none !important;
+  }
+
+  &.has-value {
+   .image-wrap {
+      display: initial !important;
+    }
+  }
+}
+
+#titlediv {
+  z-index: 2000;
+}
+
+.wp-editor-wrap {
+  position: relative;
+
+  .insert-media {
+    line-height: 1 !important;
+    min-height: 26px !important;
+    margin-bottom: 0 !important;
+    border-radius: 0 !important;
+
+    display: flex;
+    align-items: center;
+    transform: translateY(1px);
+    background-color: #fff !important;
+  }
+
+  .wp-editor-tools {
+    opacity: 0;
+    transition: all .4s;
+    visibility: hidden;
+    position: absolute;
+    right: 20px;
+    bottom: -2px;
+
+    .wp-editor-tabs {
+      display: flex;
+      gap: 5px;
+    }
+
+    .wp-switch-editor {
+      margin: 0;
+      border-bottom-color: #ccd0d4;
+      padding: 2px 4px;
+      font-size: 14px;
+    }
+  }
+
+  &:hover {
+    .wp-editor-tools {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+.wp-editor-expand {
+  .wp-editor-tools {
+    opacity: initial;
+    transition: all .4s;
+    visibility: initial;
+    position: initial;
+    right: initial;
+    bottom: initial;
+    background-color: #fff !important;
+  }
+}
+
+
+.media-modal:has(.uia-icons-gallery) {
+  z-index: 16000000 !important;
+
+  .media-frame-menu-heading,
+  .media-frame-menu,
+  .attachments-browser .media-toolbar,
+  .media-frame-router,
+  .media-menu,
+  .media-sidebar {
+    display: none !important;
+  }
+
+
+  .attachments-wrapper,
+  .media-frame-toolbar,
+  .media-frame-content,
+  .media-frame-title {
+    left: 0;
+    right: 0;
+  }
+
+  .attachments-wrapper {
+    top: 0;
+  }
+}
+
+.mce-container .lt {
+  &-attr {
+    font: 14px/1.4 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif;
+    max-height: 500px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+
+    * {
+      box-sizing: border-box;
+    }
+
+  }
+
+  &-field {
+    position: relative;
+
+    &--icon {
+      &:has(img) {
+        .lt-clear {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          line-height: 100%;
+        }
+      }
+    }
+  }
+
+  &-clear {
+    position: absolute;
+    right: -7px;
+    top: -7px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid #c3c4c7;
+    background: #fff;
+    line-height: 16px;
+    text-align: center;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+    display: none;
+
+  }
+
+  &-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    user-select: none;
+    text-align: center;
+    color: #888;
+    font-size: 18px;
+  }
+
+  &-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+
+  }
+
+  &-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1;
+  }
+
+  &-pick {
+    width: 100%;
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+
+  &-h {
+    position: sticky;
+    top: 0;
+    margin-top: 0px;
+    z-index: 2;
+    background-color: #fff;
+  }
+
+  &-h,
+  &-row {
+    display: grid;
+    grid-template-columns: 40px 80px 1fr auto;
+    gap: 10px;
+  }
+
+  &-row {
+    padding: 6px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+  }
+
+  &-row--with-area {
+    .lt-actions,
+    .lt-handle,
+    .lt-field--icon {
+      grid-row: span 2;
+    }
+  }
+
+  &-input,
+  &-textarea {
+    height: 100%;
+    width: 100%;
+    padding: 0 8px;
+    box-shadow: 0 0 0 transparent;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0 !important;
+    background-color: #fff;
+    color: #2c3338;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.mce-container {
+  *[style*="height"] {
+    max-height: 100%;
+  }
+}
+
+

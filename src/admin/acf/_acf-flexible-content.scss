@@ -1,0 +1,58 @@
+@for $i from 2 through 8 {
+  .flexible-#{$i} .acf-flexible-content > .values {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(#{$i}, 1fr);
+    gap: 10px;
+
+    .layout {
+      margin: 0 !important;
+    }
+  }
+}
+
+.flexible-1 {
+  .row-switcher {
+    display: none;
+  }
+}
+
+.layout:has(.row-switcher /*!*/ .acf-switch-input:checked) {
+  grid-column: 1/-1 !important;
+}
+
+.row-switcher {
+  position: absolute !important;
+  padding: 0 !important;
+  min-height: 48px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  pointer-events: none !important;
+  align-items: center;
+  z-index: 999;
+  transform: translateY(-100%);
+
+  label {
+    pointer-events: initial !important;
+  }
+
+  .acf-input {
+    grid-column: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .acf-label {
+    display: none;
+  }
+}
+
+.acf-fc-top-actions {
+  display: none !important;
+}
+
+[data-name="add-layout"].disabled {
+  display: none !important;
+}

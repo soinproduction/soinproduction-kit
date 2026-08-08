@@ -97,6 +97,14 @@ import { disableScroll, enableScroll } from '@soinproduction/kit/functions';
 import { AnchorObserver, cf7Reinit, loaderInstanse } from '@soinproduction/kit/functions/scripts';
 ```
 
+Admin SCSS подключается через Sass package importer:
+
+```scss
+@use "pkg:@soinproduction/kit/admin";
+@use "pkg:@soinproduction/kit/admin/wyse/style";
+@use "pkg:@soinproduction/kit/admin/plugins/link-picker";
+```
+
 ## Demo и Source Assets
 
 Demo HTML и SCSS публикуются через `src/*`:

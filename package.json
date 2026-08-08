@@ -1,6 +1,6 @@
 {
   "name": "@soinproduction/kit",
-  "version": "1.1.10",
+  "version": "1.1.11",
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
@@ -19,6 +19,26 @@
     "./functions/*": "./dist/src/functions/*.js",
     "./functions/scripts": "./dist/src/functions/scripts/index.js",
     "./functions/scripts/*": "./dist/src/functions/scripts/*.js",
+    "./admin": {
+      "sass": "./dist/src/admin/style.scss",
+      "default": "./dist/src/admin/style.scss"
+    },
+    "./admin/acf/*": {
+      "sass": "./dist/src/admin/acf/_*.scss",
+      "default": "./dist/src/admin/acf/_*.scss"
+    },
+    "./admin/plugins/link-picker": {
+      "sass": "./dist/src/admin/plugins/link-picker.scss",
+      "default": "./dist/src/admin/plugins/link-picker.scss"
+    },
+    "./admin/wyse": {
+      "sass": "./dist/src/admin/wyse/_style.scss",
+      "default": "./dist/src/admin/wyse/_style.scss"
+    },
+    "./admin/wyse/style": {
+      "sass": "./dist/src/admin/wyse/_style.scss",
+      "default": "./dist/src/admin/wyse/_style.scss"
+    },
     "./src/*": "./dist/src/*"
   },
   "files": [

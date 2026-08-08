@@ -1,0 +1,52 @@
+@use "general/fonts" with (
+  $font-assets-path: "../../../../fonts"
+);
+@use "general/vars";
+@use "general/buttons";
+
+html:has(.sp-link-picker-preview-stage) {
+  font-size: var(--rem-func);
+  font-family: var(--font-family);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.2;
+  height: 100%;
+
+  * {
+    box-sizing: border-box !important;
+  }
+
+  body {
+    width: var(--sp-preview-visible-width, 520px);
+    padding: 10px;
+    height: 100%;
+    font-family: inherit;
+    position: relative;
+    background: #fff;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+
+    * {
+      margin: 0;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+
+      background-color: #fff;
+      background-image: linear-gradient(rgba(0, 0, 0, .1) 0 0);
+      background-size: 1px 1px;
+
+      mask: repeating-linear-gradient(90deg, #000 0 2px, transparent 2px 4px), repeating-linear-gradient(0deg, #000 0 2px, transparent 2px 4px);}
+
+    & > * {
+      position: relative;
+      z-index: 1;
+    }
+  }
+}
