@@ -139,6 +139,10 @@
   z-index: 2000;
 }
 
+#wp-content-editor-tools {
+  padding-top: 0;
+}
+
 .wp-editor-wrap {
   position: relative;
 
@@ -356,5 +360,4 @@
     max-height: 100%;
   }
 }
-
 
