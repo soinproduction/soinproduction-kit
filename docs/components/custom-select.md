@@ -48,6 +48,7 @@ const select = new CustomSelect('[data-custom-select]', {
 | --- | --- | --- |
 | `mode` | `'single'` | `'single'` или `'multiple'`. |
 | `showRemoveButton` | `true` | Показывать кнопку удаления выбранного значения. |
+| `removeIconClass` | `null` | CSS-классы иконки удаления, например `icon icon-close`. Создаёт `span` вместо SVG. Пустое значение сохраняет стандартную SVG-иконку. |
 | `placeholder` | `''` | Текст, когда ничего не выбрано. |
 | `onSelect` | `null` | Callback при выборе. |
 | `onRemove` | `null` | Callback при удалении. |

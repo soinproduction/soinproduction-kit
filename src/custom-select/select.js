@@ -7,6 +7,7 @@ export class CustomSelect {
      * @param {Object} config
      * @param {"multiple"|"single"} [config.mode="multiple"]
      * @param {boolean} [config.showRemoveButton=true]
+     * @param {string|null} [config.removeIconClass=null] CSS classes for a span icon; null keeps the default SVG.
      * @param {string} [config.placeholder="Выберите элемент"]
      * @param {function} [config.onSelect=null]
      * @param {function} [config.onRemove=null]
@@ -35,6 +36,7 @@ export class CustomSelect {
         this.config = {
             mode: config.mode || 'multiple',
             showRemoveButton: config.showRemoveButton !== false,
+            removeIconClass: typeof config.removeIconClass === 'string' ? config.removeIconClass.trim() : '',
             placeholder: config.placeholder || 'Выберите элемент',
             onSelect: typeof config.onSelect === 'function' ? config.onSelect : null,
             onRemove: typeof config.onRemove === 'function' ? config.onRemove : null,
@@ -212,13 +214,31 @@ export class CustomSelect {
             const removeBtn = document.createElement('span');
             removeBtn.className = 'remove-btn';
             removeBtn.dataset.value = value;
-            removeBtn.innerHTML = `
+            removeBtn.setAttribute('role', 'button');
+            removeBtn.tabIndex = 0;
+            removeBtn.setAttribute('aria-label', `Remove ${text}`);
+            if (this.config.removeIconClass) {
+                const removeIcon = document.createElement('span');
+                removeIcon.className = this.config.removeIconClass;
+                removeIcon.setAttribute('aria-hidden', 'true');
+                removeBtn.appendChild(removeIcon);
+            } else {
+                removeBtn.innerHTML = `
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 12 12">
                     <path fill="currentColor" d="M.2.2a1 1 0 0 1 1.1 0L6 5 10.7.2a.8.8 0 0 1 1 1.1L7.2 6l4.7 4.7a.8.8 0 1 1-1.1 1L6 7.2l-4.7 4.7a.8.8 0 1 1-1-1.1L4.8 6 .2 1.3a.8.8 0 0 1 0-1Z"/>
                 </svg>`;
+            }
             removeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 this.removeValue(value);
+            });
+            removeBtn.addEventListener('keydown', (e) => {
+                e.stopPropagation();
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.removeValue(value);
+                }
             });
             selectedOption.appendChild(removeBtn);
         }
