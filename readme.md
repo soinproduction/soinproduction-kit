@@ -136,3 +136,7 @@ npm pack --dry-run --cache /private/tmp/soinproduction-kit-npm-cache
 npm login
 npm publish --access public --cache /private/tmp/soinproduction-kit-npm-cache
 ```
+
+## Выпуск новой версии
+
+Пошаговая инструкция для автора пакета: [как выпустить новую версию в npm](docs/publishing.md).
