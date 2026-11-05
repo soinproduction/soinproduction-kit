@@ -12,6 +12,6 @@ function verify(value){
 }
 verify(metadata.exports);
 assert.ok(files.has('dist/index.js'));
-assert.ok(files.has('docs/publishing.md'));
+assert.ok(!files.has('docs/publishing.md'), 'Personal publishing instructions must stay out of npm');
 assert.ok(![...files].some(file=>/^(?:node_modules|tooling|\.github)\//.test(file)));
 console.log(`Verified all public exports in ${files.size} packed files.`);

@@ -52,7 +52,6 @@ const modals = new ModalManager({
 
 - [Индекс документации](docs/README.md)
 - [Карта импортов](docs/imports.md)
-- [Публикация и release checklist](docs/publishing.md)
 - [Заметки по миграции](docs/migration.md)
 
 Компоненты:
@@ -137,6 +136,3 @@ npm login
 npm publish --access public --cache /private/tmp/soinproduction-kit-npm-cache
 ```
 
-## Выпуск новой версии
-
-Пошаговая инструкция для автора пакета: [как выпустить новую версию в npm](docs/publishing.md).
