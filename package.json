@@ -48,15 +48,23 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "npm run clean && rollup -c"
+    "build": "npm run clean && rollup -c",
+    "check": "npm run build && node tooling/verify-package.mjs",
+    "prepack": "npm run build"
   },
   "type": "module",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "author": "Андрей Соин",
   "devDependencies": {
     "rollup": "^4.45.3",
     "rollup-plugin-copy": "^3.5.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soinproduction/soinproduction-kit.git"
+  },
+  "homepage": "https://github.com/soinproduction/soinproduction-kit#readme"
 }

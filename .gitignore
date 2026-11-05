@@ -1,6 +1,7 @@
 /dist
 /node_modules
-package-lock.json
 .idea
 /readme.md
 npm_recovery_codes.txt
+
+.DS_Store
